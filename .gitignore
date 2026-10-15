@@ -1,0 +1,18 @@
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# Xcode
+# project.yml is the source of truth (XcodeGen); the generated .xcodeproj is not committed.
+Kursanzeige.xcodeproj/
+xcuserdata/
+*.xcuserstate
+DerivedData/
+
+.DS_Store
+
+# Personal Claude Code overrides (not shared with collaborators)
+.claude/settings.local.json
+
+# Archives/exports produced when distributing via TestFlight
+build/

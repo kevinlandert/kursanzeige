@@ -1,0 +1,41 @@
+name: Kursanzeige
+options:
+  bundleIdPrefix: com.kevinlandert
+  deploymentTarget:
+    iOS: "17.0"
+
+packages:
+  KursanzeigeKit:
+    path: .
+
+targets:
+  Kursanzeige:
+    type: application
+    platform: iOS
+    supportedDestinations: [iOS]
+    sources:
+      - path: Kursanzeige
+    dependencies:
+      - package: KursanzeigeKit
+    info:
+      path: Kursanzeige/Info.plist
+      properties:
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        UISupportedInterfaceOrientations~ipad: [UIInterfaceOrientationPortrait]
+        CFBundleDisplayName: Kursanzeige
+        # Portrait-only is a deliberate design choice (large, fixed table
+        # layout for low vision) -- rather than adding landscape support to
+        # satisfy iPad multitasking, this opts the app out of Split
+        # View/Slide Over entirely, which App Store Connect requires for a
+        # single-orientation iPad app.
+        UIRequiresFullScreen: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.kevinlandert.Kursanzeige
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        TARGETED_DEVICE_FAMILY: "2"
+        SWIFT_VERSION: "6.0"
+        SWIFT_STRICT_CONCURRENCY: complete
+        DEVELOPMENT_TEAM: "6Z3ZBQ6D8J"
+        CODE_SIGN_STYLE: Automatic
