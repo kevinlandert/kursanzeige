@@ -12,7 +12,7 @@ public final class InstrumentChartViewModel: Identifiable {
     /// The instrument of the tapped row: its name for the title, its group
     /// for the price format.
     public let instrument: Instrument
-    /// The shown period. Starts on one year.
+    /// The shown period. Starts on one year, unless the caller gives one.
     public private(set) var range: ChartRange
     /// True while `load()` fetches a history that was not stored.
     public private(set) var isLoading = false
@@ -38,6 +38,7 @@ public final class InstrumentChartViewModel: Identifiable {
 
     init(
         instrument: Instrument,
+        range: ChartRange = .oneYear,
         storedHistory: PriceHistory?,
         fetcher: PriceFetching,
         calendar: Calendar = .current,
@@ -45,7 +46,7 @@ public final class InstrumentChartViewModel: Identifiable {
         onFetched: @escaping (PriceHistory) async -> Void = { _ in }
     ) {
         self.instrument = instrument
-        self.range = .oneYear
+        self.range = range
         self.history = storedHistory
         self.fetcher = fetcher
         self.calendar = calendar

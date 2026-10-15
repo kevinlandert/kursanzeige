@@ -39,7 +39,7 @@ struct MainView: View {
             SettingsView(viewModel: viewModel)
         }
         .fullScreenCover(item: $chartViewModel) { chart in
-            InstrumentChartView(viewModel: chart) { chartViewModel = nil }
+            ChartPager(firstChart: chart, mainViewModel: viewModel) { chartViewModel = nil }
         }
     }
 

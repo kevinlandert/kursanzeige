@@ -12,8 +12,11 @@ import KursanzeigeKit
 /// the percent change across the whole shown range. The chart takes half
 /// the screen. It shows the price
 /// history of the last "Aktualisieren", so it opens without a network.
+/// "Vorheriger" and "Nächster" at the bottom open the neighbor rows.
 struct InstrumentChartView: View {
     let viewModel: InstrumentChartViewModel
+    let onPrevious: (() -> Void)?
+    let onNext: (() -> Void)?
     let onClose: () -> Void
 
     private var group: MarketGroup { viewModel.instrument.group }
@@ -33,11 +36,14 @@ struct InstrumentChartView: View {
                     .frame(height: geometry.size.height * 0.5)
                 rangeChangeLabel
                 Spacer(minLength: 0)
+                ChartNavigationButtons(onPrevious: onPrevious, onNext: onNext)
             }
             .padding(Theme.pageMargin)
             .background(Theme.background)
         }
-        .task { await viewModel.load() }
+        // Keyed by the instrument: "Nächster" swaps the view model, and
+        // the new instrument can need a fetch too.
+        .task(id: viewModel.id) { await viewModel.load() }
     }
 
     private var header: some View {
@@ -45,7 +51,8 @@ struct InstrumentChartView: View {
             Text(viewModel.instrument.name)
                 .font(Theme.chartTitleFont)
                 .foregroundStyle(Color.primary)
-                .lineLimit(2)
+                .lineLimit(1)
+                .minimumScaleFactor(0.4)
             Spacer()
             Button(action: onClose) {
                 Image(systemName: "xmark")
@@ -89,7 +96,7 @@ struct InstrumentChartView: View {
             VStack(spacing: 16) {
                 ProgressView().controlSize(.large)
                 Text("Lädt …")
-                    .font(Theme.chartTitleFont)
+                    .font(Theme.chartMessageFont)
                     .foregroundStyle(Color.primary)
             }
             Spacer()
@@ -123,7 +130,7 @@ struct InstrumentChartView: View {
     private func errorView(_ message: String) -> some View {
         VStack(spacing: 16) {
             Text(message)
-                .font(Theme.chartTitleFont)
+                .font(Theme.chartMessageFont)
                 .multilineTextAlignment(.center)
             Button("Erneut versuchen") {
                 Task { await viewModel.load() }
@@ -256,5 +263,10 @@ struct InstrumentChartView: View {
 }
 
 #Preview {
-    InstrumentChartView(viewModel: MainViewModel().makeChartViewModel(for: Instrument(symbol: "NESN.SW", name: "Nestlé", group: .switzerland))) {}
+    InstrumentChartView(
+        viewModel: MainViewModel().makeChartViewModel(for: Instrument(symbol: "NESN.SW", name: "Nestlé", group: .switzerland)),
+        onPrevious: nil,
+        onNext: {},
+        onClose: {}
+    )
 }

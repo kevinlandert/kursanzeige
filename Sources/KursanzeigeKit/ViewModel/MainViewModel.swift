@@ -201,16 +201,37 @@ public final class MainViewModel {
 
     /// The chart of one instrument, with its stored history. Call it once
     /// per row tap: it reads the history file. A history that the chart
-    /// must fetch is stored, so the next open needs no network.
-    public func makeChartViewModel(for instrument: Instrument) -> InstrumentChartViewModel {
+    /// must fetch is stored, so the next open needs no network. `range`
+    /// lets "Nächster" and "Vorheriger" keep the range of the last chart.
+    public func makeChartViewModel(for instrument: Instrument, range: ChartRange = .oneYear) -> InstrumentChartViewModel {
         InstrumentChartViewModel(
             instrument: instrument,
+            range: range,
             storedHistory: priceHistory(for: instrument.symbol),
             fetcher: chartFetcher,
             onFetched: { [weak self] history in
                 await self?.save([instrument.symbol: history])
             }
         )
+    }
+
+    /// The instrument in the row below `instrument`, in the order the table
+    /// shows. `nil` on the last row or for an instrument not in the table.
+    public func instrument(after instrument: Instrument) -> Instrument? {
+        displayedInstrument(at: 1, from: instrument)
+    }
+
+    /// The instrument in the row above `instrument`, in the order the table
+    /// shows. `nil` on the first row or for an instrument not in the table.
+    public func instrument(before instrument: Instrument) -> Instrument? {
+        displayedInstrument(at: -1, from: instrument)
+    }
+
+    private func displayedInstrument(at offset: Int, from instrument: Instrument) -> Instrument? {
+        guard let index = displayedRows.firstIndex(where: { $0.instrument == instrument }) else { return nil }
+        let neighborIndex = index + offset
+        guard displayedRows.indices.contains(neighborIndex) else { return nil }
+        return displayedRows[neighborIndex].instrument
     }
 
     /// Fetches fresh data for every instrument (selected group first, so it

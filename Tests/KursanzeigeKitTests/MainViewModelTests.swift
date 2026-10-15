@@ -244,6 +244,48 @@ struct MainViewModelTests {
         #expect(chart.points.map(\.close) == [77.96])
     }
 
+    @Test func chartViewModelOpensOnTheGivenRange() {
+        let viewModel = MainViewModel(instruments: [nestle], fetcher: ScriptedFetcher(scripts: [:]), cache: InMemoryCache())
+
+        let chart = viewModel.makeChartViewModel(for: nestle, range: .fiveYears)
+
+        #expect(chart.range == .fiveYears)
+    }
+
+    @Test func neighborsFollowTheOrderOfTheTable() {
+        let viewModel = MainViewModel(instruments: testInstruments, fetcher: ScriptedFetcher(scripts: [:]), cache: InMemoryCache())
+        viewModel.select(.switzerland)
+
+        #expect(viewModel.instrument(after: nestle) == novartis)
+        #expect(viewModel.instrument(before: novartis) == nestle)
+    }
+
+    @Test func firstRowHasNoPreviousAndLastRowHasNoNext() {
+        let viewModel = MainViewModel(instruments: testInstruments, fetcher: ScriptedFetcher(scripts: [:]), cache: InMemoryCache())
+        viewModel.select(.switzerland)
+
+        #expect(viewModel.instrument(before: nestle) == nil)
+        #expect(viewModel.instrument(after: novartis) == nil)
+    }
+
+    @Test func neighborsFollowAReversedSort() {
+        let viewModel = MainViewModel(instruments: testInstruments, fetcher: ScriptedFetcher(scripts: [:]), cache: InMemoryCache())
+        viewModel.select(.switzerland)
+        viewModel.toggleSort(.name)
+        viewModel.toggleSort(.name)
+
+        #expect(viewModel.instrument(after: novartis) == nestle)
+        #expect(viewModel.instrument(before: nestle) == novartis)
+    }
+
+    @Test func instrumentOutsideTheSelectedGroupHasNoNeighbors() {
+        let viewModel = MainViewModel(instruments: testInstruments, fetcher: ScriptedFetcher(scripts: [:]), cache: InMemoryCache())
+        viewModel.select(.switzerland)
+
+        #expect(viewModel.instrument(after: chf) == nil)
+        #expect(viewModel.instrument(before: chf) == nil)
+    }
+
     @Test func historyFetchedByTheChartIsStoredForTheNextOpen() async {
         let historyStore = InMemoryPriceHistoryStore()
         let chartFetcher = ScriptedFetcher(scripts: ["NESN.SW": .success(points(77.96))])

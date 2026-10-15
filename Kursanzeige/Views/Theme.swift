@@ -43,7 +43,11 @@ enum Theme {
     /// dates on the bottom axis: large and bold so they read at a glance,
     /// same rationale as every other number in this app.
     static let chartAxisFont = Font.system(size: 46, weight: .heavy).monospacedDigit()
-    static let chartTitleFont = Font.system(size: 64, weight: .bold)
+    /// The instrument name. A long name shrinks to one line, so the chart
+    /// keeps its height.
+    static let chartTitleFont = Font.system(size: 128, weight: .bold)
+    /// "Lädt …" and the error text in place of the chart.
+    static let chartMessageFont = Font.system(size: 64, weight: .bold)
     /// The whole-range percent-change line below the chart -- deliberately
     /// the single biggest text on this screen, since it's the one-number
     /// summary of everything else on it.
@@ -72,6 +76,10 @@ enum Theme {
     /// axis entirely, rather than drawn on top of that extreme's label.
     /// The labels are large, so they need a wide gap.
     static let chartCurrentValueMinSeparation: Double = 0.12
+    /// "Vorheriger" and "Nächster" below the chart.
+    static let chartNavigationFont = Font.system(size: 40, weight: .bold)
+    /// A grey button on a grey field: it reads as "not available" at once.
+    static let disabledButtonForeground = Color(uiColor: .secondaryLabel)
     static let groupButtonFont = Font.system(size: 24, weight: .semibold)
     static let refreshButtonFont = Font.system(size: 26, weight: .bold)
     static let statusFont = Font.system(size: 20, weight: .medium)
