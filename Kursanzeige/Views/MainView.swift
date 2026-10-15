@@ -5,6 +5,7 @@ import KursanzeigeKit
 /// selector, and the table. Opens showing whatever was cached from the
 /// last successful refresh -- "Aktualisieren" is a deliberate, visible
 /// action rather than something that happens silently on launch.
+/// A sideways swipe goes to the neighbor group.
 struct MainView: View {
     @State private var viewModel = MainViewModel()
     @State private var showingSettings = false
@@ -39,6 +40,8 @@ struct MainView: View {
         .padding(.horizontal, Theme.pageMargin)
         .padding(.vertical, 16)
         .background(Theme.background)
+        // Together with the table scroll: a swipe up or down still scrolls.
+        .simultaneousGesture(PageSwipe.gesture(onStep: showNeighborGroup))
         .preferredColorScheme(appearance == .dark ? .dark : .light)
         .fullScreenCover(isPresented: $showingSettings) {
             SettingsView(viewModel: viewModel)
@@ -46,6 +49,12 @@ struct MainView: View {
         .fullScreenCover(item: $chartViewModel) { chart in
             ChartPager(firstChart: chart, mainViewModel: viewModel, speaker: speaker) { chartViewModel = nil }
         }
+    }
+
+    /// Does nothing at the first or the last group.
+    private func showNeighborGroup(_ step: PageStep) {
+        guard let group = viewModel.selectedGroup.neighbor(step) else { return }
+        viewModel.select(group)
     }
 
     /// The progress and the failure count show in this bar, not in a row

@@ -13,7 +13,7 @@ struct ChartPager: View {
     let onClose: () -> Void
 
     @State private var chart: InstrumentChartViewModel
-    @State private var lastStep: ChartStep = .next
+    @State private var lastStep: PageStep = .next
     @State private var reader: ChartReader
 
     init(firstChart: InstrumentChartViewModel, mainViewModel: MainViewModel, speaker: Speaking, onClose: @escaping () -> Void) {
@@ -37,7 +37,7 @@ struct ChartPager: View {
             .transition(.push(from: lastStep == .next ? .trailing : .leading))
         }
         .contentShape(Rectangle())
-        .gesture(swipe)
+        .gesture(PageSwipe.gesture(onStep: show))
         .accessibilityScrollAction(scrollWithVoiceOver)
         .clipped()
         // A step, a range change or a fetched history gives a new text.
@@ -47,15 +47,6 @@ struct ChartPager: View {
 
     private var spokenText: String? {
         chart.spokenSummary(rangeName: Formatting.chartRangeLabel(chart.range))
-    }
-
-    /// The drag starts after 30 pt, so a tap on a button stays a tap.
-    /// `ChartStep` decides if the full drag is long enough for a step.
-    private var swipe: some Gesture {
-        DragGesture(minimumDistance: 30).onEnded { value in
-            guard let step = ChartStep(swipeWidth: value.translation.width, height: value.translation.height) else { return }
-            show(step)
-        }
     }
 
     /// With VoiceOver on, a one-finger swipe moves the focus. A
@@ -68,7 +59,7 @@ struct ChartPager: View {
         }
     }
 
-    private func neighbor(_ step: ChartStep) -> Instrument? {
+    private func neighbor(_ step: PageStep) -> Instrument? {
         switch step {
         case .previous: mainViewModel.instrument(before: chart.instrument)
         case .next: mainViewModel.instrument(after: chart.instrument)
@@ -76,7 +67,7 @@ struct ChartPager: View {
     }
 
     /// Does nothing at the first or last row.
-    private func show(_ step: ChartStep) {
+    private func show(_ step: PageStep) {
         guard let instrument = neighbor(step) else { return }
         let shownInstrument = chart.instrument
         lastStep = step
