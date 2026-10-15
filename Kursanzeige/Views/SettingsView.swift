@@ -59,7 +59,7 @@ struct SettingsView: View {
                     .padding(.horizontal, Theme.rowInset)
                     .padding(.vertical, 6)
                 } header: {
-                    Text("Anzeige").font(Self.sectionHeaderFont).foregroundStyle(Color.primary).textCase(nil)
+                    Text("Anzeige").font(Self.sectionHeaderFont).foregroundStyle(Theme.text).textCase(nil)
                 }
 
                 Section {
@@ -69,7 +69,7 @@ struct SettingsView: View {
                         .padding(.vertical, 6)
                 } header: {
                     HStack {
-                        Text("Gruppe").font(Self.sectionHeaderFont).foregroundStyle(Color.primary)
+                        Text("Gruppe").font(Self.sectionHeaderFont).foregroundStyle(Theme.text)
                         Spacer()
                         Button("Zurücksetzen") {
                             showingResetConfirmation = true
@@ -111,7 +111,7 @@ struct SettingsView: View {
                             Spacer()
                             Text(instrument.symbol)
                                 .font(Self.rowSymbolFont)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Theme.mutedText)
                         }
                         .padding(.vertical, 5)
                         .swipeActions(edge: .trailing) {
@@ -124,7 +124,7 @@ struct SettingsView: View {
                         }
                     }
                 } header: {
-                    Text(selectedEditGroup.displayName).font(Self.sectionHeaderFont).foregroundStyle(Color.primary).textCase(nil)
+                    Text(selectedEditGroup.displayName).font(Self.sectionHeaderFont).foregroundStyle(Theme.text).textCase(nil)
                 }
 
                 Section {
@@ -146,8 +146,8 @@ struct SettingsView: View {
                             .font(Theme.groupButtonFont)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 16)
-                            .background(canAdd ? Theme.positive : Theme.headerBackground)
-                            .foregroundStyle(canAdd ? Color.white : Color.secondary)
+                            .background(canAdd ? Theme.action : Theme.headerBackground)
+                            .foregroundStyle(canAdd ? Theme.buttonText : Theme.disabledButtonForeground)
                             .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius))
                     }
                     .buttonStyle(.plain)
@@ -156,7 +156,7 @@ struct SettingsView: View {
                     .padding(.horizontal, Theme.rowInset)
                     .padding(.vertical, 10)
                 } header: {
-                    Text("Hinzufügen").font(Self.sectionHeaderFont).foregroundStyle(Color.primary).textCase(nil)
+                    Text("Hinzufügen").font(Self.sectionHeaderFont).foregroundStyle(Theme.text).textCase(nil)
                 }
             }
             .listStyle(.insetGrouped)
@@ -177,7 +177,7 @@ struct SettingsView: View {
                     } label: {
                         Image(systemName: "xmark.circle.fill")
                             .font(.system(size: 30))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Theme.mutedText)
                     }
                     .accessibilityLabel("Einstellungen schliessen")
                 }

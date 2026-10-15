@@ -11,6 +11,10 @@ struct MainView: View {
     /// Set by a row tap. Created once per tap, so the chart's history file
     /// is read once, not on every re-render of this view.
     @State private var chartViewModel: InstrumentChartViewModel?
+    /// One voice for the full app life. See `SynthesizerSpeaker`.
+    @State private var speaker = SynthesizerSpeaker()
+    /// Stored, so the choice stays after the app closes.
+    @AppStorage(Appearance.storageKey) private var appearance = Appearance.light
 
     var body: some View {
         VStack(spacing: 16) {
@@ -35,43 +39,49 @@ struct MainView: View {
         .padding(.horizontal, Theme.pageMargin)
         .padding(.vertical, 16)
         .background(Theme.background)
+        .preferredColorScheme(appearance == .dark ? .dark : .light)
         .fullScreenCover(isPresented: $showingSettings) {
             SettingsView(viewModel: viewModel)
         }
         .fullScreenCover(item: $chartViewModel) { chart in
-            ChartPager(firstChart: chart, mainViewModel: viewModel) { chartViewModel = nil }
+            ChartPager(firstChart: chart, mainViewModel: viewModel, speaker: speaker) { chartViewModel = nil }
         }
     }
 
-    /// The refresh-progress bar and the post-refresh failure count both
-    /// live here now, next to the settings button, instead of as a row
-    /// between the group selector and the table -- that row only existed
-    /// while refreshing or while there were failures, so its
-    /// appearance/disappearance shifted the group selector and table down
-    /// and back up. `topBar` never gains or loses a row, so nothing moves.
+    /// The progress and the failure count show in this bar, not in a row
+    /// of their own. Thus the group buttons and the table never move.
     ///
-    /// The bar is pinned to a fixed height and centered (not
-    /// `.firstTextBaseline`): several of these children aren't text, so
-    /// baseline alignment falls back to each one's bottom edge, and that
-    /// fallback shifted as different non-text children appeared/disappeared.
-    /// A fixed height sidesteps that entirely.
+    /// During a refresh, the progress shows in place of the date. The bar
+    /// does not have space for both next to the buttons. The date is old
+    /// during a refresh, and the new date shows after it.
+    ///
+    /// The bar has a fixed height and centers its items. A text baseline
+    /// does not work: for an item without text, the baseline is the
+    /// bottom edge, and that edge changes when an item comes or goes.
     private var topBar: some View {
         HStack(alignment: .center) {
-            Text(Formatting.asOf(viewModel.lastUpdated))
-                .font(Theme.timestampFont)
-                .foregroundStyle(Color.primary)
-            Spacer()
             if viewModel.isRefreshing {
                 RefreshProgressView(progress: viewModel.progress)
-            } else if !viewModel.failedFetches.isEmpty {
+            } else {
+                Text(Formatting.asOf(viewModel.lastUpdated))
+                    .font(Theme.timestampFont)
+                    .foregroundStyle(Theme.text)
+            }
+            Spacer()
+            if !viewModel.isRefreshing && !viewModel.failedFetches.isEmpty {
                 FailureStatusView(failedFetches: viewModel.failedFetches, totalCount: viewModel.totalInstrumentCount)
+            }
+            AppearanceButton(appearance: appearance) {
+                appearance = appearance.toggled
             }
             SettingsButton {
                 showingSettings = true
             }
+            .padding(.leading, Theme.topBarButtonGap)
             RefreshButton(isRefreshing: viewModel.isRefreshing) {
                 Task { await viewModel.refresh() }
             }
+            .padding(.leading, Theme.topBarButtonGap)
         }
         .frame(height: Theme.topBarHeight)
     }

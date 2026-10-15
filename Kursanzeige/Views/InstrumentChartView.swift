@@ -3,20 +3,23 @@ import Charts
 import KursanzeigeKit
 
 /// Full-screen overlay opened by tapping a table row: the instrument's
-/// close price over a chosen range, as a thick dark-blue line with the
+/// close price over a chosen range, as a thick yellow line with the
 /// highest and lowest value labeled directly on the right-hand axis --
 /// large and bold, since this app is for someone with low vision -- plus
-/// the current value in the same blue as the line (label only, no line of
+/// the current value in the same color as the line (label only, no line of
 /// its own), unless it's too close to the high or low for both labels to
 /// fit without overlapping. Below the chart, a bold green/red line shows
-/// the percent change across the whole shown range. The chart takes half
-/// the screen. It shows the price
+/// the percent change across the whole shown range. The chart takes 45 %
+/// of the screen, so the title keeps its full size. It shows the price
 /// history of the last "Aktualisieren", so it opens without a network.
-/// "Vorheriger" and "Nächster" at the bottom open the neighbor rows.
+/// "Vorlesen" reads the chart aloud. "Vorheriger" and "Nächster" at the
+/// bottom open the neighbor rows.
 struct InstrumentChartView: View {
     let viewModel: InstrumentChartViewModel
     let onPrevious: (() -> Void)?
     let onNext: (() -> Void)?
+    let isReadingAloud: Bool
+    let onReadAloud: () -> Void
     let onClose: () -> Void
 
     private var group: MarketGroup { viewModel.instrument.group }
@@ -33,9 +36,10 @@ struct InstrumentChartView: View {
                     // left a large blank gap below the plot with the
                     // x-axis labels stranded at the very bottom of the
                     // screen instead of right under the chart.
-                    .frame(height: geometry.size.height * 0.5)
+                    .frame(height: geometry.size.height * Theme.chartHeightShare)
                 rangeChangeLabel
                 Spacer(minLength: 0)
+                ReadAloudButton(isOn: isReadingAloud, action: onReadAloud)
                 ChartNavigationButtons(onPrevious: onPrevious, onNext: onNext)
             }
             .padding(Theme.pageMargin)
@@ -50,7 +54,7 @@ struct InstrumentChartView: View {
         HStack(alignment: .firstTextBaseline) {
             Text(viewModel.instrument.name)
                 .font(Theme.chartTitleFont)
-                .foregroundStyle(Color.primary)
+                .foregroundStyle(Theme.text)
                 .lineLimit(1)
                 .minimumScaleFactor(0.4)
                 .accessibilityIdentifier("chartTitle")
@@ -59,7 +63,7 @@ struct InstrumentChartView: View {
                 Image(systemName: "xmark")
                     .font(.system(size: Theme.chartCloseButtonSize * 0.5, weight: .bold))
                     .frame(width: Theme.chartCloseButtonSize, height: Theme.chartCloseButtonSize)
-                    .foregroundStyle(Color.primary)
+                    .foregroundStyle(Theme.text)
             }
             .accessibilityLabel("Schliessen")
         }
@@ -80,9 +84,7 @@ struct InstrumentChartView: View {
                         .minimumScaleFactor(0.7)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 16)
-                        .background(isActive ? Color.accentColor : Theme.headerBackground)
-                        .foregroundStyle(isActive ? Color.white : Color.primary)
-                        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius))
+                        .choiceButtonLook(isSelected: isActive)
                 }
                 .buttonStyle(.plain)
                 .accessibilityAddTraits(isActive ? [.isSelected] : [])
@@ -98,7 +100,7 @@ struct InstrumentChartView: View {
                 ProgressView().controlSize(.large)
                 Text("Lädt …")
                     .font(Theme.chartMessageFont)
-                    .foregroundStyle(Color.primary)
+                    .foregroundStyle(Theme.text)
             }
             Spacer()
         } else if let errorMessage = viewModel.errorMessage {
@@ -115,17 +117,12 @@ struct InstrumentChartView: View {
     /// matches whichever of the four range buttons is active.
     @ViewBuilder
     private var rangeChangeLabel: some View {
-        if let percent = rangeChangePercent {
+        if let percent = viewModel.rangeChangePercent {
             Text(Formatting.percent(percent))
                 .font(Theme.chartRangeChangeFont)
                 .foregroundStyle(Formatting.color(for: percent))
                 .accessibilityLabel("Veränderung über den gewählten Zeitraum: \(Formatting.percent(percent))")
         }
-    }
-
-    private var rangeChangePercent: Double? {
-        guard let first = viewModel.points.first?.close, let last = viewModel.points.last?.close, first != 0 else { return nil }
-        return (last - first) / first * 100
     }
 
     private func errorView(_ message: String) -> some View {
@@ -169,14 +166,14 @@ struct InstrumentChartView: View {
                 if let date = value.as(Date.self) {
                     Text(Formatting.chartAxisDate(date))
                         .font(Theme.chartAxisFont)
-                        .foregroundStyle(Color.primary)
+                        .foregroundStyle(Theme.text)
                 }
             }
         }
     }
 
     /// The same faint grid as the x-axis, plus dashed lines and labels at
-    /// the exact high and low. The current value gets a blue label only:
+    /// the exact high and low. The current value gets a label in the line color only:
     /// no line, so it reads as "this is where we are now", not as a third
     /// rule that competes with the high/low pair.
     @AxisContentBuilder
@@ -188,7 +185,7 @@ struct InstrumentChartView: View {
         AxisMarks(position: .trailing, values: axisExtremes) { value in
             AxisGridLine(stroke: StrokeStyle(lineWidth: Theme.chartExtremeLineWidth, dash: Theme.chartExtremeLineDash))
                 .foregroundStyle(Theme.chartExtremeLineColor)
-            priceAxisLabel(value, color: Color.primary)
+            priceAxisLabel(value, color: Theme.text)
         }
         AxisMarks(position: .trailing, values: currentValueAxisValue) { value in
             priceAxisLabel(value, color: Theme.chartLineColor)
@@ -241,7 +238,7 @@ struct InstrumentChartView: View {
     /// squeezes the whole line into a thin band at the top of the plot
     /// (an index around 8'000 barely moves relative to a 0...8'000 axis).
     /// Scaling to the data's own range instead makes every wiggle visible
-    /// and the half-screen-tall chart actually get used.
+    /// and the tall chart actually get used.
     private var yAxisDomain: ClosedRange<Double> {
         guard let minClose = viewModel.minClose, let maxClose = viewModel.maxClose, minClose < maxClose else {
             let only = viewModel.minClose ?? 0
@@ -268,6 +265,8 @@ struct InstrumentChartView: View {
         viewModel: MainViewModel().makeChartViewModel(for: Instrument(symbol: "NESN.SW", name: "Nestlé", group: .switzerland)),
         onPrevious: nil,
         onNext: {},
+        isReadingAloud: false,
+        onReadAloud: {},
         onClose: {}
     )
 }

@@ -32,8 +32,8 @@ struct ChartNavigationButtons: View {
                 .minimumScaleFactor(0.7)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 22)
-                .background(isEnabled ? Color.accentColor : Theme.headerBackground)
-                .foregroundStyle(isEnabled ? Color.white : Theme.disabledButtonForeground)
+                .background(isEnabled ? Theme.accent : Theme.headerBackground)
+                .foregroundStyle(isEnabled ? Theme.buttonText : Theme.disabledButtonForeground)
                 .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius))
         }
         .buttonStyle(.plain)

@@ -12,7 +12,7 @@ struct RefreshProgressView: View {
     var body: some View {
         VStack(spacing: 8) {
             ProgressView(value: progress)
-                .tint(Color.accentColor)
+                .tint(Theme.accent)
                 .frame(width: 160)
             Text("\(Int((progress * 100).rounded())) % geladen")
                 .font(Theme.progressFont)

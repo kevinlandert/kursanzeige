@@ -6,15 +6,19 @@ import KursanzeigeKit
 /// `MainView` swapped its presented item instead, the full-screen page
 /// would close and open again on each step. The next chart keeps the
 /// chosen range, and slides in from the side the step points to.
+/// "Vorlesen" stays on across steps, and reads each new chart. The reader
+/// lives as long as the open page, so each page starts with it off.
 struct ChartPager: View {
     let mainViewModel: MainViewModel
     let onClose: () -> Void
 
     @State private var chart: InstrumentChartViewModel
     @State private var lastStep: ChartStep = .next
+    @State private var reader: ChartReader
 
-    init(firstChart: InstrumentChartViewModel, mainViewModel: MainViewModel, onClose: @escaping () -> Void) {
+    init(firstChart: InstrumentChartViewModel, mainViewModel: MainViewModel, speaker: Speaking, onClose: @escaping () -> Void) {
         _chart = State(initialValue: firstChart)
+        _reader = State(initialValue: ChartReader(speaker: speaker))
         self.mainViewModel = mainViewModel
         self.onClose = onClose
     }
@@ -25,6 +29,8 @@ struct ChartPager: View {
                 viewModel: chart,
                 onPrevious: neighbor(.previous) == nil ? nil : { show(.previous) },
                 onNext: neighbor(.next) == nil ? nil : { show(.next) },
+                isReadingAloud: reader.isOn,
+                onReadAloud: { reader.toggle(shownText: spokenText) },
                 onClose: onClose
             )
             .id(chart.id)
@@ -34,6 +40,13 @@ struct ChartPager: View {
         .gesture(swipe)
         .accessibilityScrollAction(scrollWithVoiceOver)
         .clipped()
+        // A step, a range change or a fetched history gives a new text.
+        .onChange(of: spokenText) { _, newText in reader.readIfOn(newText) }
+        .onDisappear { reader.turnOff() }
+    }
+
+    private var spokenText: String? {
+        chart.spokenSummary(rangeName: Formatting.chartRangeLabel(chart.range))
     }
 
     /// The drag starts after 30 pt, so a tap on a button stays a tap.

@@ -31,6 +31,13 @@ public final class InstrumentChartViewModel: Identifiable {
     public var minClose: Double? { points.map(\.close).min() }
     /// The highest close in `points`, for the high label on the axis.
     public var maxClose: Double? { points.map(\.close).max() }
+    /// The change from the first to the last shown close, in percent. The
+    /// first close is the base close of the range, so this equals the
+    /// table's change for that period. `nil` without closes.
+    public var rangeChangePercent: Double? {
+        guard let first = points.first?.close, let last = points.last?.close, first != 0 else { return nil }
+        return (last - first) / first * 100
+    }
     /// The symbol, so `fullScreenCover(item:)` can present the chart.
     public nonisolated var id: String { instrument.symbol }
 
@@ -66,6 +73,21 @@ public final class InstrumentChartViewModel: Identifiable {
     public func select(_ range: ChartRange) {
         self.range = range
         points = makePoints()
+    }
+
+    /// The text that "Vorlesen" reads for this chart, e.g. "Nestlé, 1 Jahr,
+    /// 77,96, plus 3,2 Prozent". `rangeName` is the label of the range
+    /// button, so the voice and the screen use the same words. `nil`
+    /// without closes.
+    public func spokenSummary(rangeName: String) -> String? {
+        guard let lastClose = points.last?.close else { return nil }
+        return ChartSpeech.text(
+            name: instrument.name,
+            rangeName: rangeName,
+            price: lastClose,
+            group: instrument.group,
+            changePercent: rangeChangePercent
+        )
     }
 
     /// Fetches the history only when none is stored. Ignored while a fetch

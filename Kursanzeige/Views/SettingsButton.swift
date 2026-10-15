@@ -7,12 +7,7 @@ struct SettingsButton: View {
 
     var body: some View {
         Button(action: action) {
-            Image(systemName: "gearshape.fill")
-                .font(.system(size: 26, weight: .semibold))
-                .padding(18)
-                .background(Theme.headerBackground)
-                .foregroundStyle(Color.primary)
-                .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius))
+            TopBarIcon(systemName: "gearshape.fill")
         }
         .buttonStyle(.plain)
         .accessibilityLabel("Einstellungen öffnen")

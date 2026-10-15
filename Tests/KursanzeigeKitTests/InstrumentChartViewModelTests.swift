@@ -118,6 +118,28 @@ struct InstrumentChartViewModelTests {
         #expect(viewModel.maxClose == allCloses.map(\.close).max())
     }
 
+    @Test("the range change goes from the first to the last shown close")
+    func rangeChangeGoesFromFirstToLastClose() {
+        let viewModel = createViewModel(storedHistory: createStoredHistory(), fetcher: CountingFetcher())
+
+        #expect(viewModel.rangeChangePercent == 62.5)
+    }
+
+    @Test("without closes there is no range change and nothing to read")
+    func noClosesHaveNoRangeChangeAndNothingToRead() {
+        let viewModel = createViewModel(storedHistory: nil, fetcher: CountingFetcher())
+
+        #expect(viewModel.rangeChangePercent == nil)
+        #expect(viewModel.spokenSummary(rangeName: "1 Jahr") == nil)
+    }
+
+    @Test("the spoken summary gives the name, the range, the last close and the range change")
+    func spokenSummaryGivesNameRangeLastCloseAndChange() {
+        let viewModel = createViewModel(storedHistory: createStoredHistory(), fetcher: CountingFetcher())
+
+        #expect(viewModel.spokenSummary(rangeName: "1 Jahr") == "Nestlé, 1 Jahr, 65, plus 62,5 Prozent")
+    }
+
     @Test("minClose and maxClose span only the shown range")
     func minAndMaxCloseSpanShownRange() {
         let viewModel = createViewModel(storedHistory: createStoredHistory(), fetcher: CountingFetcher())

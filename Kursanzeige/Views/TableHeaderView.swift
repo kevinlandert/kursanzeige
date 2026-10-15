@@ -45,7 +45,7 @@ struct TableHeaderView: View {
                         .font(.system(size: 16, weight: .bold))
                 }
             }
-            .foregroundStyle(sortColumn == column ? Color.accentColor : Color.primary)
+            .foregroundStyle(sortColumn == column ? Theme.accentText : Theme.text)
         }
         .buttonStyle(.plain)
         .frame(width: width, alignment: .center)

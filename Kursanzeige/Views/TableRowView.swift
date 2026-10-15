@@ -15,7 +15,7 @@ struct TableRowView: View {
         HStack(spacing: 0) {
             Text(row.instrument.name)
                 .font(Theme.nameFont)
-                .foregroundStyle(Color.primary)
+                .foregroundStyle(Theme.text)
                 .lineLimit(2)
                 .multilineTextAlignment(.leading)
                 // No `minimumScaleFactor`: every name stays at `nameFont`'s

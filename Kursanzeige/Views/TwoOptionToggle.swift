@@ -33,9 +33,7 @@ struct TwoOptionToggle<Option: Equatable>: View {
                 .minimumScaleFactor(0.7)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 18)
-                .background(isActive ? Color.accentColor : Theme.headerBackground)
-                .foregroundStyle(isActive ? Color.white : Color.primary)
-                .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius))
+                .choiceButtonLook(isSelected: isActive)
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(isActive ? [.isSelected] : [])

@@ -20,9 +20,7 @@ struct GroupSelectorView: View {
                         .minimumScaleFactor(0.7)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 16)
-                        .background(group == selected ? Color.accentColor : Theme.headerBackground)
-                        .foregroundStyle(group == selected ? Color.white : Color.primary)
-                        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius))
+                        .choiceButtonLook(isSelected: group == selected)
                 }
                 .buttonStyle(.plain)
                 .accessibilityAddTraits(group == selected ? [.isSelected] : [])

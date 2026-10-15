@@ -5,27 +5,31 @@ import KursanzeigeKit
 /// requirement (this app is for someone with low vision) stays a one-file
 /// change instead of a hunt through every view.
 enum Theme {
-    // Colors chosen for contrast against the row backgrounds below, not just
-    // hue: a value that rounds to 0.0 renders in `neutral`, and every percent
-    // additionally carries an explicit +/− sign so color is never the only
-    // signal. Darkened from an earlier, lighter pair once measured against
-    // both row bands: #3A9A3A-ish green cleared only ~3.6:1 on white, under
-    // the 4.5:1 minimum. These two clear 4.5:1 on both white and
-    // `rowBackgroundOdd` (7.4:1 / 6.0:1 respectively).
-    static let positive = Color(red: 0 / 255, green: 100 / 255, blue: 0 / 255)     // #006400
-    static let negative = Color(red: 176 / 255, green: 0 / 255, blue: 0 / 255)     // #B00000
-    static let neutral = Color.primary
-    static let background = Color(uiColor: .systemBackground)
-    static let headerBackground = Color(uiColor: .secondarySystemBackground)
-    // `.separator` is intentionally translucent and easy to miss; `.opaqueSeparator`
-    // is Apple's solid, more-visible counterpart while still adapting to dark mode.
+    // The color values are in `Palette`, one set for light and one for dark.
+    // A value that rounds to 0.0 shows in `neutral`. Each percent also has
+    // a +/− sign, so color is never the only signal.
+    static let text = Color.palette(\.text)
+    /// Grey text for a value that is not from today.
+    static let mutedText = Color.palette(\.mutedText)
+    static let positive = Color.palette(\.positive)
+    static let negative = Color.palette(\.negative)
+    static let neutral = text
+    static let background = Color.palette(\.background)
+    static let headerBackground = Color.palette(\.headerBackground)
+    static let rowBackgroundEven = Color.palette(\.rowBackgroundEven)
+    static let rowBackgroundOdd = Color.palette(\.rowBackgroundOdd)
+    /// The background of a selected button, with `buttonText` on it.
+    static let accent = Color.palette(\.accent)
+    /// The title of the sort column.
+    static let accentText = Color.palette(\.accentText)
+    /// The green background of "Aktualisieren" and "Hinzufügen".
+    static let action = Color.palette(\.action)
+    static let buttonText = Color.palette(\.buttonText)
+    static let buttonBorder = Color.palette(\.buttonBorder)
+    static let buttonBorderWidth: CGFloat = 2
+    // `.separator` is translucent and easy to miss. `.opaqueSeparator` is
+    // the solid system line, and it also changes with dark mode.
     static let separator = Color(uiColor: .opaqueSeparator)
-    // Alternating row bands: literal light-mode values chosen alongside
-    // `positive`/`negative` above for specific measured contrast ratios, not
-    // adaptive `UIColor`s -- dark mode isn't addressed by this pair and still
-    // falls back to `background` until that's tackled separately.
-    static let rowBackgroundEven = Color(red: 255 / 255, green: 255 / 255, blue: 255 / 255)  // #FFFFFF
-    static let rowBackgroundOdd = Color(red: 227 / 255, green: 232 / 255, blue: 240 / 255)   // #E3E8F0
 
     static let nameFontSize: CGFloat = 30
     static let nameFont = Font.system(size: nameFontSize, weight: .semibold)
@@ -34,10 +38,9 @@ enum Theme {
     /// digits so direction reads before color does.
     static let signFont = Font.system(size: 34, weight: .heavy).monospacedDigit()
     static let headerFont = Font.system(size: 26, weight: .bold)
-    /// Thick dark-blue line for the chart overlay -- a color
-    /// distinct from `positive`/`negative` so the line itself never reads
-    /// as a signed value.
-    static let chartLineColor = Color(red: 0 / 255, green: 51 / 255, blue: 153 / 255)  // #003399
+    /// The thick chart line. Its color is different from `positive` and
+    /// `negative`, so the line never looks like a rise or a fall.
+    static let chartLineColor = Color.palette(\.chartLine)
     static let chartLineWidth: CGFloat = 12
     /// The high/low/current labels on the right axis and the start/end
     /// dates on the bottom axis: large and bold so they read at a glance,
@@ -63,12 +66,12 @@ enum Theme {
     static let chartAxisLineWidth: CGFloat = 2
     /// The plot's own border: darker and thicker again than the axis lines
     /// above, so the chart's outer edge is unmistakable at a glance.
-    static let chartBorderColor = Color.primary
+    static let chartBorderColor = Theme.text
     static let chartBorderWidth: CGFloat = 3
     /// The two horizontal lines at the exact high/low close -- dashed so
     /// they read as "this is the line that explains that label" rather
     /// than blending into the regular automatic grid.
-    static let chartExtremeLineColor = Color.primary
+    static let chartExtremeLineColor = Theme.text
     static let chartExtremeLineWidth: CGFloat = 2.5
     static let chartExtremeLineDash: [CGFloat] = [8, 5]
     /// How close the current value needs to be to the high or low (as a
@@ -78,8 +81,16 @@ enum Theme {
     static let chartCurrentValueMinSeparation: Double = 0.12
     /// "Vorheriger" and "Nächster" below the chart.
     static let chartNavigationFont = Font.system(size: 40, weight: .bold)
-    /// A grey button on a grey field: it reads as "not available" at once.
-    static let disabledButtonForeground = Color(uiColor: .secondaryLabel)
+    /// The part of the chart page height that the chart takes. More
+    /// makes the title shrink, because the page has no more space.
+    static let chartHeightShare: CGFloat = 0.45
+    /// The "Vorlesen" button above "Vorheriger" and "Nächster".
+    static let readAloudButtonWidth: CGFloat = 220
+    static let readAloudButtonHeight: CGFloat = 100
+    static let readAloudIconSize: CGFloat = 56
+    /// Grey text on a grey button: it shows "not available" at once. The
+    /// grey has a tested contrast, so the text stays clear.
+    static let disabledButtonForeground = mutedText
     static let groupButtonFont = Font.system(size: 24, weight: .semibold)
     static let refreshButtonFont = Font.system(size: 26, weight: .bold)
     static let statusFont = Font.system(size: 20, weight: .medium)
@@ -112,6 +123,9 @@ enum Theme {
     /// the bar itself, which would otherwise push the group selector and
     /// table down and back up.
     static let topBarHeight: CGFloat = 72
+    /// The gap between the buttons of the top bar. A wide gap makes a tap
+    /// on the wrong button less probable.
+    static let topBarButtonGap: CGFloat = 40
 }
 
 /// Proportional column widths shared by the header and every row so they

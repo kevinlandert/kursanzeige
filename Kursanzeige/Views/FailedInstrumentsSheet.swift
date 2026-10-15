@@ -16,7 +16,7 @@ struct FailedInstrumentsSheet: View {
                         .font(.system(size: 24, weight: .semibold))
                     Text("\(failure.instrument.symbol) · \(failure.instrument.group.displayName)")
                         .font(.system(size: 18))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Theme.mutedText)
                     Text(failure.reason)
                         .font(.system(size: 18, weight: .medium))
                         .foregroundStyle(Theme.negative)

@@ -12,16 +12,11 @@ enum Formatting {
         return calendar
     }()
 
-    /// FX pairs are conventionally quoted to up to 4 decimals; everything
-    /// else (equities, indices, commodities, crypto) to up to 2 -- except
-    /// once the integer part is already 4+ digits (an index level like
-    /// 3601, a four-figure stock price), where fractional cents add noise,
-    /// not information, so they're dropped regardless of group. "Up to":
-    /// a range rather than a fixed length, so a value like 999.5 prints as
-    /// that, not padded out to 999.50.
+    /// The decimals follow `PricePrecision`, the same rule as the spoken
+    /// price. "Up to": 999.5 prints as that, not as 999.50.
     static func price(_ value: Double?, group: MarketGroup) -> String {
         guard let value else { return "–" }
-        let maxDecimals = abs(value) >= 1000 ? 0 : (group == .currencies ? 4 : 2)
+        let maxDecimals = PricePrecision.maximumFractionDigits(for: value, group: group)
         return value.formatted(.number.locale(swissLocale).precision(.fractionLength(0...maxDecimals)).grouping(.automatic))
     }
 
@@ -50,7 +45,7 @@ enum Formatting {
     /// single "is the table stale" flag.
     static func dayChangeColor(percent: Double?, asOf: Date?) -> Color {
         guard percent != nil else { return Theme.neutral }
-        guard let asOf, zurichCalendar.isDateInToday(asOf) else { return .secondary }
+        guard let asOf, zurichCalendar.isDateInToday(asOf) else { return Theme.mutedText }
         return color(for: percent)
     }
 
