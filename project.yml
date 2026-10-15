@@ -24,6 +24,11 @@ targets:
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
         UISupportedInterfaceOrientations~ipad: [UIInterfaceOrientationPortrait]
         CFBundleDisplayName: Kursanzeige
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        # The app uses only HTTPS, which is exempt. Without this key, each
+        # TestFlight build waits for a manual export compliance answer.
+        ITSAppUsesNonExemptEncryption: false
         # Portrait-only is a deliberate design choice (large, fixed table
         # layout for low vision) -- rather than adding landscape support to
         # satisfy iPad multitasking, this opts the app out of Split
@@ -33,6 +38,10 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.kevinlandert.Kursanzeige
+        MARKETING_VERSION: "1.0"
+        # Xcode Cloud replaces this with its own build number (see
+        # ci_scripts/ci_post_clone.sh): TestFlight refuses a number twice.
+        CURRENT_PROJECT_VERSION: "1"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         TARGETED_DEVICE_FAMILY: "2"
         SWIFT_VERSION: "6.0"
