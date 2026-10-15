@@ -1,15 +1,17 @@
 import SwiftUI
 import KursanzeigeKit
 
-/// The chart page, with "Vorheriger" and "Nächster" wired to the table
-/// order. It holds the shown chart itself: if `MainView` swapped its
-/// presented item instead, the full-screen page would close and open
-/// again on each tap. The next chart keeps the chosen range.
+/// The chart page, with "Vorheriger", "Nächster" and a sideways swipe
+/// wired to the table order. It holds the shown chart itself: if
+/// `MainView` swapped its presented item instead, the full-screen page
+/// would close and open again on each step. The next chart keeps the
+/// chosen range, and slides in from the side the step points to.
 struct ChartPager: View {
     let mainViewModel: MainViewModel
     let onClose: () -> Void
 
     @State private var chart: InstrumentChartViewModel
+    @State private var lastStep: ChartStep = .next
 
     init(firstChart: InstrumentChartViewModel, mainViewModel: MainViewModel, onClose: @escaping () -> Void) {
         _chart = State(initialValue: firstChart)
@@ -18,19 +20,61 @@ struct ChartPager: View {
     }
 
     var body: some View {
-        InstrumentChartView(
-            viewModel: chart,
-            onPrevious: showChartAction(for: mainViewModel.instrument(before: chart.instrument)),
-            onNext: showChartAction(for: mainViewModel.instrument(after: chart.instrument)),
-            onClose: onClose
-        )
+        ZStack {
+            InstrumentChartView(
+                viewModel: chart,
+                onPrevious: neighbor(.previous) == nil ? nil : { show(.previous) },
+                onNext: neighbor(.next) == nil ? nil : { show(.next) },
+                onClose: onClose
+            )
+            .id(chart.id)
+            .transition(.push(from: lastStep == .next ? .trailing : .leading))
+        }
+        .contentShape(Rectangle())
+        .gesture(swipe)
+        .accessibilityScrollAction(scrollWithVoiceOver)
+        .clipped()
     }
 
-    /// `nil` when there is no such row, which greys the button out.
-    private func showChartAction(for instrument: Instrument?) -> (() -> Void)? {
-        guard let instrument else { return nil }
-        return {
-            chart = mainViewModel.makeChartViewModel(for: instrument, range: chart.range)
+    /// The drag starts after 30 pt, so a tap on a button stays a tap.
+    /// `ChartStep` decides if the full drag is long enough for a step.
+    private var swipe: some Gesture {
+        DragGesture(minimumDistance: 30).onEnded { value in
+            guard let step = ChartStep(swipeWidth: value.translation.width, height: value.translation.height) else { return }
+            show(step)
+        }
+    }
+
+    /// With VoiceOver on, a one-finger swipe moves the focus. A
+    /// three-finger swipe to the left asks for the trailing edge.
+    private func scrollWithVoiceOver(from edge: Edge) {
+        switch edge {
+        case .trailing: show(.next)
+        case .leading: show(.previous)
+        case .top, .bottom: break
+        }
+    }
+
+    private func neighbor(_ step: ChartStep) -> Instrument? {
+        switch step {
+        case .previous: mainViewModel.instrument(before: chart.instrument)
+        case .next: mainViewModel.instrument(after: chart.instrument)
+        }
+    }
+
+    /// Does nothing at the first or last row.
+    private func show(_ step: ChartStep) {
+        guard let instrument = neighbor(step) else { return }
+        let shownInstrument = chart.instrument
+        lastStep = step
+        // A separate update: the old chart must first take the new
+        // direction, else it slides out to the wrong side.
+        Task { @MainActor in
+            // A second quick tap finds the step already done.
+            guard chart.instrument == shownInstrument else { return }
+            withAnimation(.easeInOut(duration: 0.3)) {
+                chart = mainViewModel.makeChartViewModel(for: instrument, range: chart.range)
+            }
         }
     }
 }

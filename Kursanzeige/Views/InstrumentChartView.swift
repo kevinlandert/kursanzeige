@@ -41,8 +41,8 @@ struct InstrumentChartView: View {
             .padding(Theme.pageMargin)
             .background(Theme.background)
         }
-        // Keyed by the instrument: "Nächster" swaps the view model, and
-        // the new instrument can need a fetch too.
+        // Keyed by the instrument, so a new instrument also gets its fetch
+        // if a caller swaps the view model without a new view identity.
         .task(id: viewModel.id) { await viewModel.load() }
     }
 
@@ -53,6 +53,7 @@ struct InstrumentChartView: View {
                 .foregroundStyle(Color.primary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.4)
+                .accessibilityIdentifier("chartTitle")
             Spacer()
             Button(action: onClose) {
                 Image(systemName: "xmark")

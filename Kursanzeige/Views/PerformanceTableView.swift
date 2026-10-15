@@ -41,6 +41,7 @@ struct PerformanceTableView: View {
                                 .onTapGesture { onSelect(row) }
                                 .accessibilityAddTraits(.isButton)
                                 .accessibilityHint("Zeigt den Jahresverlauf")
+                                .accessibilityIdentifier("tableRow")
                         }
                     } header: {
                         TableHeaderView(layout: layout, sortColumn: sortColumn, sortAscending: sortAscending, oneYearMode: oneYearMode, rangeMode: rangeMode, onTap: onSort)
