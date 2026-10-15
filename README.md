@@ -16,3 +16,5 @@ Run the logic tests without Xcode:
 ```sh
 swift test
 ```
+
+Each push to `main` builds in Xcode Cloud and goes to TestFlight.
