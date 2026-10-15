@@ -38,16 +38,16 @@ enum Theme {
     /// distinct from `positive`/`negative` so the line itself never reads
     /// as a signed value.
     static let chartLineColor = Color(red: 0 / 255, green: 51 / 255, blue: 153 / 255)  // #003399
-    static let chartLineWidth: CGFloat = 5
+    static let chartLineWidth: CGFloat = 12
     /// The high/low/current labels on the right axis and the start/end
     /// dates on the bottom axis: large and bold so they read at a glance,
     /// same rationale as every other number in this app.
-    static let chartAxisFont = Font.system(size: 34, weight: .heavy).monospacedDigit()
-    static let chartTitleFont = Font.system(size: 48, weight: .bold)
+    static let chartAxisFont = Font.system(size: 46, weight: .heavy).monospacedDigit()
+    static let chartTitleFont = Font.system(size: 64, weight: .bold)
     /// The whole-range percent-change line below the chart -- deliberately
     /// the single biggest text on this screen, since it's the one-number
     /// summary of everything else on it.
-    static let chartRangeChangeFont = Font.system(size: 60, weight: .heavy).monospacedDigit()
+    static let chartRangeChangeFont = Font.system(size: 84, weight: .heavy).monospacedDigit()
     static let chartCloseButtonSize: CGFloat = 44
     /// Extra gap between the chart's right-hand axis labels and the plot's
     /// own border, beyond Swift Charts' default spacing -- otherwise the
@@ -70,7 +70,8 @@ enum Theme {
     /// How close the current value needs to be to the high or low (as a
     /// fraction of the high-low range) before its label is left off the
     /// axis entirely, rather than drawn on top of that extreme's label.
-    static let chartCurrentValueMinSeparation: Double = 0.08
+    /// The labels are large, so they need a wide gap.
+    static let chartCurrentValueMinSeparation: Double = 0.12
     static let groupButtonFont = Font.system(size: 24, weight: .semibold)
     static let refreshButtonFont = Font.system(size: 26, weight: .bold)
     static let statusFont = Font.system(size: 20, weight: .medium)
