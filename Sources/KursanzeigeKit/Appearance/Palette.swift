@@ -19,6 +19,9 @@ public struct Palette: Sendable, Equatable {
     /// line never looks like a rise or a fall. The label of the current
     /// price has this color too, so it must be clear as text.
     public let chartLine: RGBColor
+    /// The box around the chart. In dark mode it is grey: a white box on
+    /// black is too bright next to the yellow line.
+    public let chartBorder: RGBColor
     /// The background of a selected button.
     public let accent: RGBColor
     /// The title of the sort column.
@@ -42,6 +45,7 @@ public struct Palette: Sendable, Equatable {
         positive: RGBColor(hex: 0x006400),
         negative: RGBColor(hex: 0xB00000),
         chartLine: RGBColor(hex: 0x8A6500),
+        chartBorder: RGBColor(hex: 0x000000),
         accent: RGBColor(hex: 0x0062D6),
         accentText: RGBColor(hex: 0x0062D6),
         action: RGBColor(hex: 0x006400),
@@ -61,6 +65,7 @@ public struct Palette: Sendable, Equatable {
         positive: RGBColor(hex: 0x4CD964),
         negative: RGBColor(hex: 0xFF6B6B),
         chartLine: RGBColor(hex: 0xFFD60A),
+        chartBorder: RGBColor(hex: 0x9A9AA2),
         accent: RGBColor(hex: 0x0A5FD0),
         accentText: RGBColor(hex: 0x8AB4FF),
         action: RGBColor(hex: 0x1E7B1E),

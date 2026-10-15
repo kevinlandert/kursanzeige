@@ -149,19 +149,19 @@ struct InstrumentChartView: View {
         .chartPlotStyle { plotArea in
             plotArea.border(Theme.chartBorderColor, width: Theme.chartBorderWidth)
         }
+        .chartXScale(range: .plotDimension(padding: Theme.chartLineInset))
         .chartYScale(domain: yAxisDomain)
     }
 
     /// A faint, regular grid, so a point in between is easier to place,
-    /// plus bold lines and labels at the first and last date.
+    /// plus the first and the last date below the ends of the line. The
+    /// dates have no grid line or tick: the line ends show their place.
     @AxisContentBuilder
     private var xAxisMarks: some AxisContent {
         AxisMarks(values: .automatic(desiredCount: 4)) { _ in
             AxisGridLine().foregroundStyle(Theme.separator.opacity(0.3))
         }
         AxisMarks(values: xAxisExtremes) { value in
-            AxisGridLine(stroke: StrokeStyle(lineWidth: Theme.chartAxisLineWidth)).foregroundStyle(Theme.separator)
-            AxisTick(stroke: StrokeStyle(lineWidth: Theme.chartAxisLineWidth)).foregroundStyle(Theme.separator)
             AxisValueLabel(anchor: value.as(Date.self) == xAxisExtremes.first ? .topLeading : .topTrailing) {
                 if let date = value.as(Date.self) {
                     Text(Formatting.chartAxisDate(date))
@@ -173,9 +173,10 @@ struct InstrumentChartView: View {
     }
 
     /// The same faint grid as the x-axis, plus dashed lines and labels at
-    /// the exact high and low. The current value gets a label in the line color only:
-    /// no line, so it reads as "this is where we are now", not as a third
-    /// rule that competes with the high/low pair.
+    /// the exact high and low. The current price gets a label in the line
+    /// color, except for a flat line. It gets no line: a third line would
+    /// compete with the high and low lines. Near the high or low, the
+    /// label moves away.
     @AxisContentBuilder
     private var yAxisMarks: some AxisContent {
         AxisMarks(position: .trailing, values: .automatic(desiredCount: 4)) { _ in
@@ -185,18 +186,18 @@ struct InstrumentChartView: View {
         AxisMarks(position: .trailing, values: axisExtremes) { value in
             AxisGridLine(stroke: StrokeStyle(lineWidth: Theme.chartExtremeLineWidth, dash: Theme.chartExtremeLineDash))
                 .foregroundStyle(Theme.chartExtremeLineColor)
-            priceAxisLabel(value, color: Theme.text)
+            priceAxisLabel(value.as(Double.self), color: Theme.text)
         }
-        AxisMarks(position: .trailing, values: currentValueAxisValue) { value in
-            priceAxisLabel(value, color: Theme.chartLineColor)
+        AxisMarks(position: .trailing, values: currentPriceLabelPosition) { _ in
+            priceAxisLabel(viewModel.points.last?.close, color: Theme.chartLineColor)
         }
     }
 
     /// A price on the right axis, in the large axis font, with extra space
     /// between the label and the plot border.
-    private func priceAxisLabel(_ value: AxisValue, color: Color) -> some AxisMark {
+    private func priceAxisLabel(_ price: Double?, color: Color) -> some AxisMark {
         AxisValueLabel(horizontalSpacing: Theme.chartAxisLabelMargin) {
-            if let close = value.as(Double.self) {
+            if let close = price {
                 Text(Formatting.price(close, group: group))
                     .font(Theme.chartAxisFont)
                     .foregroundStyle(color)
@@ -212,25 +213,14 @@ struct InstrumentChartView: View {
         return [minClose, maxClose]
     }
 
-    /// The most recent close, as a one-element (or empty) array for
-    /// `AxisMarks(values:)` -- empty when it's too close to the high or
-    /// low for its label to avoid overlapping that one.
-    private var currentValueAxisValue: [Double] {
-        guard let minClose = viewModel.minClose, let maxClose = viewModel.maxClose,
-              let currentClose = viewModel.points.last?.close,
-              isFarEnoughFromExtremes(currentClose, min: minClose, max: maxClose)
+    /// The place of the current price label, as a list of one value for
+    /// `AxisMarks(values:)`. Empty without data or for a flat line.
+    private var currentPriceLabelPosition: [Double] {
+        guard let low = viewModel.minClose, let high = viewModel.maxClose,
+              let current = viewModel.points.last?.close,
+              let position = CurrentPriceLabel.axisValue(current: current, low: low, high: high, minimumGapShare: Theme.chartCurrentPriceLabelGapShare)
         else { return [] }
-        return [currentClose]
-    }
-
-    /// Whether `value` sits far enough from both the high and the low
-    /// (as a fraction of the high-low range) that its own axis label
-    /// wouldn't land on top of that extreme's label.
-    private func isFarEnoughFromExtremes(_ value: Double, min: Double, max: Double) -> Bool {
-        let range = max - min
-        guard range > 0 else { return false }
-        let minimumSeparation = range * Theme.chartCurrentValueMinSeparation
-        return abs(value - max) > minimumSeparation && abs(value - min) > minimumSeparation
+        return [position]
     }
 
     /// A small margin above and below the shown close range -- without

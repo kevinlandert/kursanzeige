@@ -42,6 +42,10 @@ enum Theme {
     /// `negative`, so the line never looks like a rise or a fall.
     static let chartLineColor = Color.palette(\.chartLine)
     static let chartLineWidth: CGFloat = 12
+    /// The space between the box and the first and last point of the line.
+    /// A round line end goes half the line width past its point. Thus the
+    /// full line width leaves a gap of half the width to the box.
+    static let chartLineInset: CGFloat = chartLineWidth
     /// The high/low/current labels on the right axis and the start/end
     /// dates on the bottom axis: large and bold so they read at a glance,
     /// same rationale as every other number in this app.
@@ -60,13 +64,9 @@ enum Theme {
     /// own border, beyond Swift Charts' default spacing -- otherwise the
     /// high/low/current numbers sit almost flush against the box edge.
     static let chartAxisLabelMargin: CGFloat = 12
-    /// Stroke width for the chart's axis lines/ticks/border -- noticeably
-    /// heavier than `Theme.separator`'s usual hairline so the axis itself
-    /// reads as clearly as the high/low/start/end labels next to it.
-    static let chartAxisLineWidth: CGFloat = 2
-    /// The plot's own border: darker and thicker again than the axis lines
-    /// above, so the chart's outer edge is unmistakable at a glance.
-    static let chartBorderColor = Theme.text
+    /// The box around the plot. It is thicker than the grid lines, so the
+    /// edge of the chart is clear. In dark mode it is grey, not white.
+    static let chartBorderColor = Color.palette(\.chartBorder)
     static let chartBorderWidth: CGFloat = 3
     /// The two horizontal lines at the exact high/low close -- dashed so
     /// they read as "this is the line that explains that label" rather
@@ -74,11 +74,10 @@ enum Theme {
     static let chartExtremeLineColor = Theme.text
     static let chartExtremeLineWidth: CGFloat = 2.5
     static let chartExtremeLineDash: [CGFloat] = [8, 5]
-    /// How close the current value needs to be to the high or low (as a
-    /// fraction of the high-low range) before its label is left off the
-    /// axis entirely, rather than drawn on top of that extreme's label.
-    /// The labels are large, so they need a wide gap.
-    static let chartCurrentValueMinSeparation: Double = 0.12
+    /// The smallest gap between the current price label and the high or
+    /// low label, as a part of the high-low range. A label nearer to them
+    /// moves away. The labels are large, so they need a wide gap.
+    static let chartCurrentPriceLabelGapShare: Double = 0.16
     /// "Vorheriger" and "Nächster" below the chart.
     static let chartNavigationFont = Font.system(size: 40, weight: .bold)
     /// The part of the chart page height that the chart takes. More

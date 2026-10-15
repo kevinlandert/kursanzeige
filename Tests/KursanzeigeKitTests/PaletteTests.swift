@@ -77,6 +77,17 @@ struct PaletteTests {
         #expect(palette.buttonBorder.contrastRatio(to: palette.headerBackground) >= Self.minimumButtonContrast)
     }
 
+    @Test("the chart box stands out from the page", arguments: [Palette.light, Palette.dark])
+    func chartBorderStandsOutFromPage(palette: Palette) {
+        #expect(palette.chartBorder.contrastRatio(to: palette.background) >= Self.minimumButtonContrast)
+    }
+
+    /// A white box on black is too bright next to the yellow line.
+    @Test("in dark mode the chart box is less bright than the text")
+    func darkChartBorderIsLessBrightThanText() {
+        #expect(Palette.dark.chartBorder.relativeLuminance < Palette.dark.text.relativeLuminance)
+    }
+
     @Test("a blue or a green button stands out from the dark page", arguments: [Palette.dark])
     func buttonsStandOutFromDarkPage(palette: Palette) {
         #expect(palette.accent.contrastRatio(to: palette.background) >= Self.minimumButtonContrast)
