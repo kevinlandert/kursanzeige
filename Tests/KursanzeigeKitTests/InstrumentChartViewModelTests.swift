@@ -100,6 +100,24 @@ struct InstrumentChartViewModelTests {
         #expect(await fetcher.callCount == 0)
     }
 
+    @Test("a five-year chart shows a thinned line with the same change, high and low")
+    func fiveYearChartShowsThinnedLine() {
+        let dailyCloses = (0..<1_826).map { day in
+            ClosePoint(date: utcCalendar.date(byAdding: .day, value: -day, to: fetchTime)!, close: 100 + Double(day % 13) + Double(day) / 50)
+        }
+        let history = PriceHistory(closes: dailyCloses, fetchedAt: fetchTime)
+        let viewModel = createViewModel(storedHistory: history, fetcher: CountingFetcher())
+
+        viewModel.select(.fiveYears)
+
+        let allCloses = history.closes(in: .fiveYears, calendar: utcCalendar)
+        #expect(viewModel.points.count <= InstrumentChartViewModel.maximumPointCount)
+        #expect(viewModel.points.first == allCloses.first)
+        #expect(viewModel.points.last == allCloses.last)
+        #expect(viewModel.minClose == allCloses.map(\.close).min())
+        #expect(viewModel.maxClose == allCloses.map(\.close).max())
+    }
+
     @Test("minClose and maxClose span only the shown range")
     func minAndMaxCloseSpanShownRange() {
         let viewModel = createViewModel(storedHistory: createStoredHistory(), fetcher: CountingFetcher())

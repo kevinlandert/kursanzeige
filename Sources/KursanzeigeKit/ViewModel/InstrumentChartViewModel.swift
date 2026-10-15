@@ -19,8 +19,14 @@ public final class InstrumentChartViewModel: Identifiable {
     /// A German reason for the last failed fetch. `nil` after a success.
     public private(set) var errorMessage: String?
 
-    /// Sorted oldest to newest, and only the closes of `range`.
-    public var points: [ClosePoint] { history?.closes(in: range, calendar: calendar) ?? [] }
+    /// A long line has at most this many points: more make the thick line
+    /// a scribble of daily moves (see `LineThinner`).
+    static let maximumPointCount = 75
+
+    /// The closes of `range`, sorted oldest to newest. A long range is
+    /// thinned, but keeps its first, last, highest and lowest close.
+    /// Stored, because the view reads it many times per render.
+    public private(set) var points: [ClosePoint] = []
     /// The lowest close in `points`, for the low label on the axis.
     public var minClose: Double? { points.map(\.close).min() }
     /// The highest close in `points`, for the high label on the axis.
@@ -52,12 +58,14 @@ public final class InstrumentChartViewModel: Identifiable {
         self.calendar = calendar
         self.now = now
         self.onFetched = onFetched
+        self.points = makePoints()
     }
 
     /// Shows `range`, cut from the history that is already in memory.
     /// No fetch.
     public func select(_ range: ChartRange) {
         self.range = range
+        points = makePoints()
     }
 
     /// Fetches the history only when none is stored. Ignored while a fetch
@@ -70,6 +78,7 @@ public final class InstrumentChartViewModel: Identifiable {
         do {
             let fetched = PriceHistory(closes: try await fetcher.fetchCloses(for: instrument.symbol), fetchedAt: now())
             history = fetched
+            points = makePoints()
             await onFetched(fetched)
         } catch let error as FetchError {
             errorMessage = error.userFacingReason
@@ -77,5 +86,10 @@ public final class InstrumentChartViewModel: Identifiable {
             errorMessage = "Unbekannter Fehler"
         }
         isLoading = false
+    }
+
+    private func makePoints() -> [ClosePoint] {
+        guard let history else { return [] }
+        return LineThinner.thin(history.closes(in: range, calendar: calendar), toAtMost: Self.maximumPointCount)
     }
 }
