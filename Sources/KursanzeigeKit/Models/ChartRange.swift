@@ -4,7 +4,9 @@ import Foundation
 /// per-chart toggle -- picking a new range cuts a different part of the
 /// stored price history, with no new fetch. Display strings live in the
 /// view layer, same pattern as `OneYearMode`/`RangeMode`.
+/// The case order is the order of the range buttons, shortest first.
 public enum ChartRange: CaseIterable, Sendable, Hashable {
+    case oneMonth
     case threeMonths
     case oneYear
     case fiveYears
@@ -13,6 +15,7 @@ public enum ChartRange: CaseIterable, Sendable, Hashable {
     /// months or years -- the same targets `PerformanceCalculator` uses.
     func startDate(endingAt end: Date, calendar: Calendar) -> Date {
         let (component, value): (Calendar.Component, Int) = switch self {
+        case .oneMonth: (.month, -1)
         case .threeMonths: (.month, -3)
         case .oneYear: (.year, -1)
         case .fiveYears: (.year, -5)

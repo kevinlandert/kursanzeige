@@ -70,6 +70,7 @@ enum Formatting {
     /// German label for a chart range button.
     static func chartRangeLabel(_ range: ChartRange) -> String {
         switch range {
+        case .oneMonth: return "1 Monat"
         case .threeMonths: return "3 Monate"
         case .oneYear: return "1 Jahr"
         case .fiveYears: return "5 Jahre"

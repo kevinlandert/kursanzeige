@@ -86,6 +86,23 @@ struct PriceHistoryTests {
         #expect(chartChange == tableChange)
     }
 
+    @Test("the one-month chart change equals the table's one-month change")
+    func oneMonthChartChangeEqualsTableChange() throws {
+        let fetchedOnSunday = date(2026, 10, 18)
+        let history = PriceHistory(closes: createWeekdayCloses(endingAt: fetchedOnSunday, days: 2_000), fetchedAt: fetchedOnSunday)
+        let tableChange = try #require(PerformanceCalculator.changes(closes: history.closes, asOf: fetchedOnSunday, calendar: utcCalendar).oneMonthChangePercent)
+
+        let shown = history.closes(in: .oneMonth, calendar: utcCalendar)
+        let chartChange = (shown.last!.close - shown.first!.close) / shown.first!.close * 100
+
+        #expect(chartChange == tableChange)
+    }
+
+    @Test("the range buttons go from the shortest to the longest range")
+    func rangesAreOrderedShortestFirst() {
+        #expect(ChartRange.allCases == [.oneMonth, .threeMonths, .oneYear, .fiveYears])
+    }
+
     @Test("a decoded history is sorted, even when the file is not")
     func decodedHistoryIsSorted() throws {
         let unsorted = PriceHistory(closes: [], fetchedAt: date(2026, 10, 15))

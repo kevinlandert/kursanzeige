@@ -64,7 +64,7 @@ struct InstrumentChartView: View {
         }
     }
 
-    /// The three range buttons. Picking one cuts that span from the
+    /// The four range buttons. Picking one cuts that span from the
     /// stored history at once (see `InstrumentChartViewModel.select`).
     private var rangeSelector: some View {
         HStack(spacing: 10) {
@@ -111,7 +111,7 @@ struct InstrumentChartView: View {
 
     /// The change from the first to the last point on screen -- the whole
     /// shown range's performance, not a fixed period, so it always
-    /// matches whichever of the three range buttons is active.
+    /// matches whichever of the four range buttons is active.
     @ViewBuilder
     private var rangeChangeLabel: some View {
         if let percent = rangeChangePercent {

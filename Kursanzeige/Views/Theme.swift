@@ -52,7 +52,7 @@ enum Theme {
     /// the single biggest text on this screen, since it's the one-number
     /// summary of everything else on it.
     static let chartRangeChangeFont = Font.system(size: 84, weight: .heavy).monospacedDigit()
-    static let chartCloseButtonSize: CGFloat = 44
+    static let chartCloseButtonSize: CGFloat = 100
     /// Extra gap between the chart's right-hand axis labels and the plot's
     /// own border, beyond Swift Charts' default spacing -- otherwise the
     /// high/low/current numbers sit almost flush against the box edge.
