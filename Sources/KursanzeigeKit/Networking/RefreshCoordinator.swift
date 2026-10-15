@@ -32,23 +32,15 @@ struct RefreshCoordinator {
         var completed = 0
         let total = instruments.count
 
+        // Each `addTask` call is directly in this closure. A nested
+        // function that captures `group` adds the tasks to a copy of the
+        // group in a Release build. The group then ends at once, and the
+        // app crashes when a task finishes.
         await withTaskGroup(of: (Instrument, Result<[ClosePoint], Error>).self) { group in
-            var pending = instruments[...]
-
-            func startNext() {
-                guard let instrument = pending.first else { return }
-                pending = pending.dropFirst()
-                group.addTask {
-                    do {
-                        return (instrument, .success(try await fetcher.fetchCloses(for: instrument.symbol)))
-                    } catch {
-                        return (instrument, .failure(error))
-                    }
-                }
-            }
-
-            for _ in 0..<min(maxConcurrency, instruments.count) {
-                startNext()
+            var pending = instruments.makeIterator()
+            for _ in 0..<maxConcurrency {
+                guard let instrument = pending.next() else { break }
+                group.addTask { await fetchResult(for: instrument) }
             }
 
             while let (instrument, result) = await group.next() {
@@ -63,10 +55,22 @@ struct RefreshCoordinator {
                 }
                 completed += 1
                 onProgress(Double(completed) / Double(total))
-                startNext()
+                if let next = pending.next() {
+                    group.addTask { await fetchResult(for: next) }
+                }
             }
         }
 
         return RefreshResult(rows: rows, histories: histories, failures: failures)
+    }
+
+    /// Gives the error as a value, so one failed symbol does not stop the
+    /// other fetches.
+    private func fetchResult(for instrument: Instrument) async -> (Instrument, Result<[ClosePoint], Error>) {
+        do {
+            return (instrument, .success(try await fetcher.fetchCloses(for: instrument.symbol)))
+        } catch {
+            return (instrument, .failure(error))
+        }
     }
 }
