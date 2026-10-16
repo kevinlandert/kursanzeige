@@ -8,15 +8,17 @@ import Foundation
 private actor TrackingFetcher: PriceFetching {
     let failingSymbols: Set<String>
     let delayNanoseconds: UInt64
+    let currency: String?
     private var inFlight = 0
     private(set) var peakInFlight = 0
 
-    init(failingSymbols: Set<String> = [], delayNanoseconds: UInt64 = 0) {
+    init(failingSymbols: Set<String> = [], delayNanoseconds: UInt64 = 0, currency: String? = nil) {
         self.failingSymbols = failingSymbols
         self.delayNanoseconds = delayNanoseconds
+        self.currency = currency
     }
 
-    func fetchCloses(for symbol: String) async throws -> [ClosePoint] {
+    func fetchCloses(for symbol: String) async throws -> FetchedCloses {
         inFlight += 1
         peakInFlight = max(peakInFlight, inFlight)
         if delayNanoseconds > 0 {
@@ -26,7 +28,7 @@ private actor TrackingFetcher: PriceFetching {
         if failingSymbols.contains(symbol) {
             throw FetchError.notFound
         }
-        return [ClosePoint(date: Date(), close: 100)]
+        return FetchedCloses(closes: [ClosePoint(date: Date(), close: 100)], currency: currency)
     }
 }
 
@@ -64,6 +66,17 @@ struct RefreshCoordinatorTests {
         #expect(result.rows.count == 5)
         #expect(result.failures.isEmpty)
         #expect(log.recorded.last == 1.0)
+    }
+
+    @Test("the fetched currency goes to the row and to the history")
+    func fetchedCurrencyGoesToRowAndHistory() async {
+        let instruments = makeInstruments(1)
+        let coordinator = RefreshCoordinator(fetcher: TrackingFetcher(currency: "CHF"))
+
+        let result = await coordinator.refresh(instruments, asOf: Date()) { _ in }
+
+        #expect(result.rows.first?.currency == "CHF")
+        #expect(result.histories[instruments[0].symbol]?.currency == "CHF")
     }
 
     @Test func failedSymbolsAreReportedAndExcludedFromRows() async {

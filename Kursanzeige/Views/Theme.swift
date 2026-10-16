@@ -46,13 +46,16 @@ enum Theme {
     /// A round line end goes half the line width past its point. Thus the
     /// full line width leaves a gap of half the width to the box.
     static let chartLineInset: CGFloat = chartLineWidth
-    /// The high/low/current labels on the right axis and the start/end
-    /// dates on the bottom axis: large and bold so they read at a glance,
-    /// same rationale as every other number in this app.
+    /// The high, low and current labels on the right axis: large and bold
+    /// so they read at a glance, as every other number in this app.
     static let chartAxisFont = Font.system(size: 46, weight: .heavy).monospacedDigit()
     /// The instrument name. A long name shrinks to one line, so the chart
     /// keeps its height.
     static let chartTitleFont = Font.system(size: 128, weight: .bold)
+    /// The currency next to the title. Half the title size: the name
+    /// stays the main text.
+    static let chartCurrencyFont = Font.system(size: 64, weight: .bold)
+    static let chartCurrencyGap: CGFloat = 16
     /// "Lädt …" and the error text in place of the chart.
     static let chartMessageFont = Font.system(size: 64, weight: .bold)
     /// The whole-range percent-change line below the chart -- deliberately
@@ -80,9 +83,13 @@ enum Theme {
     static let chartCurrentPriceLabelGapShare: Double = 0.16
     /// "Vorheriger" and "Nächster" below the chart.
     static let chartNavigationFont = Font.system(size: 40, weight: .bold)
-    /// The part of the chart page height that the chart takes. More
-    /// makes the title shrink, because the page has no more space.
+    /// The largest part of the chart page height that the chart takes.
+    /// More makes the title shrink, because the page has no more space.
     static let chartHeightShare: CGFloat = 0.45
+    /// The chart never gets lower, also on a small screen.
+    static let chartMinimumHeight: CGFloat = 250
+    /// Keeps "Vorheriger" and "Nächster" clear of the round screen corners.
+    static let chartPageBottomGap: CGFloat = 10
     /// The "Vorlesen" button above "Vorheriger" and "Nächster".
     static let readAloudButtonWidth: CGFloat = 220
     static let readAloudButtonHeight: CGFloat = 100

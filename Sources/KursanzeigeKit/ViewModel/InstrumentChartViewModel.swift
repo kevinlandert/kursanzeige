@@ -38,6 +38,9 @@ public final class InstrumentChartViewModel: Identifiable {
         guard let first = points.first?.close, let last = points.last?.close, first != 0 else { return nil }
         return (last - first) / first * 100
     }
+    /// The currency of the prices, e.g. "CHF", next to the title. `nil`
+    /// for an index or an exchange rate, or before a history is there.
+    public var currency: String? { history?.currency }
     /// The symbol, so `fullScreenCover(item:)` can present the chart.
     public nonisolated var id: String { instrument.symbol }
 
@@ -76,7 +79,7 @@ public final class InstrumentChartViewModel: Identifiable {
     }
 
     /// The text that "Vorlesen" reads for this chart, e.g. "Nestlé, 1 Jahr,
-    /// 77,96, plus 3,2 Prozent". `rangeName` is the label of the range
+    /// 77,96 Franken, plus 3,2 Prozent". `rangeName` is the label of the range
     /// button, so the voice and the screen use the same words. `nil`
     /// without closes.
     public func spokenSummary(rangeName: String) -> String? {
@@ -86,6 +89,7 @@ public final class InstrumentChartViewModel: Identifiable {
             rangeName: rangeName,
             price: lastClose,
             group: instrument.group,
+            currency: currency,
             changePercent: rangeChangePercent
         )
     }
@@ -98,7 +102,8 @@ public final class InstrumentChartViewModel: Identifiable {
         errorMessage = nil
 
         do {
-            let fetched = PriceHistory(closes: try await fetcher.fetchCloses(for: instrument.symbol), fetchedAt: now())
+            let fetchedCloses = try await fetcher.fetchCloses(for: instrument.symbol)
+            let fetched = PriceHistory(closes: fetchedCloses.closes, currency: fetchedCloses.currency, fetchedAt: now())
             history = fetched
             points = makePoints()
             await onFetched(fetched)

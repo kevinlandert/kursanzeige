@@ -103,6 +103,24 @@ struct PriceHistoryTests {
         #expect(ChartRange.allCases == [.oneMonth, .threeMonths, .oneYear, .fiveYears])
     }
 
+    @Test("a history keeps its currency in the stored file")
+    func historyKeepsCurrencyInFile() throws {
+        let history = PriceHistory(closes: [], currency: "GBP", fetchedAt: date(2026, 10, 15))
+
+        let decoded = try JSONDecoder().decode(PriceHistory.self, from: JSONEncoder().encode(history))
+
+        #expect(decoded.currency == "GBP")
+    }
+
+    @Test("a file from before the currency gives a history without a currency")
+    func fileWithoutCurrencyGivesNoCurrency() throws {
+        let json: [String: Any] = ["closes": [], "fetchedAt": date(2026, 10, 15).timeIntervalSinceReferenceDate]
+
+        let decoded = try JSONDecoder().decode(PriceHistory.self, from: JSONSerialization.data(withJSONObject: json))
+
+        #expect(decoded.currency == nil)
+    }
+
     @Test("a decoded history is sorted, even when the file is not")
     func decodedHistoryIsSorted() throws {
         let unsorted = PriceHistory(closes: [], fetchedAt: date(2026, 10, 15))

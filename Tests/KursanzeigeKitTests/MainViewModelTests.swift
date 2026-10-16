@@ -10,9 +10,9 @@ private actor ScriptedFetcher: PriceFetching {
         self.scripts = scripts
     }
 
-    func fetchCloses(for symbol: String) async throws -> [ClosePoint] {
+    func fetchCloses(for symbol: String) async throws -> FetchedCloses {
         switch scripts[symbol] {
-        case .success(let points): return points
+        case .success(let points): return FetchedCloses(closes: points)
         case .failure(let error): throw error
         case nil: throw FetchError.network
         }
@@ -114,6 +114,16 @@ struct MainViewModelTests {
         viewModel.toggleSort(.name)
         #expect(viewModel.sortAscending == false)
         #expect(viewModel.displayedRows.map(\.instrument.name) == ["Novartis", "Nestlé"])
+    }
+
+    @Test("the spoken table gives the selected group in the order of the table")
+    func spokenTableFollowsTableOrder() {
+        let viewModel = MainViewModel(instruments: testInstruments, fetcher: ScriptedFetcher(scripts: [:]), cache: InMemoryCache())
+        viewModel.select(.switzerland)
+        viewModel.toggleSort(.name)
+        viewModel.toggleSort(.name)
+
+        #expect(viewModel.spokenTable == "Schweiz. Novartis, kein Kurs. Nestlé, kein Kurs.")
     }
 
     @Test func togglingNewColumnResetsToAscending() {

@@ -5,7 +5,8 @@ import KursanzeigeKit
 /// selector, and the table. Opens showing whatever was cached from the
 /// last successful refresh -- "Aktualisieren" is a deliberate, visible
 /// action rather than something that happens silently on launch.
-/// A sideways swipe goes to the neighbor group.
+/// A sideways swipe goes to the neighbor group. "Vorlesen" at the bottom
+/// reads the table.
 struct MainView: View {
     @State private var viewModel = MainViewModel()
     @State private var showingSettings = false
@@ -13,9 +14,17 @@ struct MainView: View {
     /// is read once, not on every re-render of this view.
     @State private var chartViewModel: InstrumentChartViewModel?
     /// One voice for the full app life. See `SynthesizerSpeaker`.
-    @State private var speaker = SynthesizerSpeaker()
+    @State private var speaker: SynthesizerSpeaker
+    /// "Vorlesen" of the table. It uses the same voice as the chart page.
+    @State private var tableReader: PageReader
     /// Stored, so the choice stays after the app closes.
     @AppStorage(Appearance.storageKey) private var appearance = Appearance.light
+
+    init() {
+        let speaker = SynthesizerSpeaker()
+        _speaker = State(initialValue: speaker)
+        _tableReader = State(initialValue: PageReader(speaker: speaker))
+    }
 
     var body: some View {
         VStack(spacing: 16) {
@@ -32,16 +41,26 @@ struct MainView: View {
                 oneYearMode: viewModel.oneYearMode,
                 rangeMode: viewModel.rangeMode,
                 onSort: { viewModel.toggleSort($0) },
-                onSelect: { chartViewModel = viewModel.makeChartViewModel(for: $0.instrument) }
+                onSelect: { row in
+                    tableReader.turnOff()
+                    chartViewModel = viewModel.makeChartViewModel(for: row.instrument)
+                }
             )
             .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius))
             .overlay(RoundedRectangle(cornerRadius: Theme.cornerRadius).stroke(Theme.separator))
+
+            ReadAloudButton(isOn: tableReader.isOn, identifier: "tableReadAloud") {
+                tableReader.toggle(shownText: viewModel.spokenTable)
+            }
         }
         .padding(.horizontal, Theme.pageMargin)
         .padding(.vertical, 16)
         .background(Theme.background)
         // Together with the table scroll: a swipe up or down still scrolls.
         .simultaneousGesture(PageSwipe.gesture(onStep: showNeighborGroup))
+        // Not on each new price: during a refresh, the voice would start
+        // again after each fetch.
+        .onChange(of: tableOrder) { tableReader.readIfOn(viewModel.spokenTable) }
         .preferredColorScheme(appearance == .dark ? .dark : .light)
         .fullScreenCover(isPresented: $showingSettings) {
             SettingsView(viewModel: viewModel)
@@ -49,6 +68,11 @@ struct MainView: View {
         .fullScreenCover(item: $chartViewModel) { chart in
             ChartPager(firstChart: chart, mainViewModel: viewModel, speaker: speaker) { chartViewModel = nil }
         }
+    }
+
+    /// A new group or a new sort gives a new table text.
+    private var tableOrder: TableOrder {
+        TableOrder(group: viewModel.selectedGroup, sortColumn: viewModel.sortColumn, sortAscending: viewModel.sortAscending)
     }
 
     /// Does nothing at the first or the last group.
@@ -84,6 +108,7 @@ struct MainView: View {
                 appearance = appearance.toggled
             }
             SettingsButton {
+                tableReader.turnOff()
                 showingSettings = true
             }
             .padding(.leading, Theme.topBarButtonGap)
@@ -94,6 +119,13 @@ struct MainView: View {
         }
         .frame(height: Theme.topBarHeight)
     }
+}
+
+/// The shown group and its sort, without the prices.
+private struct TableOrder: Equatable {
+    let group: MarketGroup
+    let sortColumn: SortColumn
+    let sortAscending: Bool
 }
 
 #Preview {

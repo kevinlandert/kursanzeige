@@ -7,13 +7,14 @@ import KursanzeigeKit
 /// highest and lowest value labeled directly on the right-hand axis --
 /// large and bold, since this app is for someone with low vision -- plus
 /// the current value in the same color as the line (label only, no line of
-/// its own), unless it's too close to the high or low for both labels to
-/// fit without overlapping. Below the chart, a bold green/red line shows
-/// the percent change across the whole shown range. The chart takes 45 %
-/// of the screen, so the title keeps its full size. It shows the price
-/// history of the last "Aktualisieren", so it opens without a network.
-/// "Vorlesen" reads the chart aloud. "Vorheriger" and "Nächster" at the
-/// bottom open the neighbor rows.
+/// its own). Near the high or low, the current value label moves away.
+/// Below the chart, a bold green/red line shows the percent change across
+/// the whole shown range. The chart takes at most 45 % of the screen, so
+/// the title keeps its full size. It shows the price history of the last
+/// "Aktualisieren", so it opens without a network. The currency of a
+/// stock, an ETF or a future shows next to the title. "Vorlesen" reads
+/// the chart aloud. "Vorheriger" and "Nächster" at the bottom open the
+/// neighbor rows.
 struct InstrumentChartView: View {
     let viewModel: InstrumentChartViewModel
     let onPrevious: (() -> Void)?
@@ -30,19 +31,21 @@ struct InstrumentChartView: View {
                 header
                 rangeSelector
                 content
-                    // A fixed height, not just a minimum -- Swift Charts
-                    // doesn't reliably stretch its plot area to fill an
-                    // open-ended `maxHeight: .infinity` proposal, which
-                    // left a large blank gap below the plot with the
-                    // x-axis labels stranded at the very bottom of the
-                    // screen instead of right under the chart.
-                    .frame(height: geometry.size.height * Theme.chartHeightShare)
+                    // A finite maximum: Swift Charts does not fill an
+                    // open `maxHeight: .infinity`, and leaves a blank gap
+                    // below the plot. Below the maximum, the chart gives
+                    // way, so the buttons stay on a smaller screen, e.g.
+                    // with display zoom.
+                    .frame(minHeight: Theme.chartMinimumHeight, maxHeight: geometry.size.height * Theme.chartHeightShare)
                 rangeChangeLabel
+                // Gets only the space that the chart does not use.
                 Spacer(minLength: 0)
-                ReadAloudButton(isOn: isReadingAloud, action: onReadAloud)
+                    .layoutPriority(-1)
+                ReadAloudButton(isOn: isReadingAloud, identifier: "readAloud", action: onReadAloud)
                 ChartNavigationButtons(onPrevious: onPrevious, onNext: onNext)
             }
             .padding(Theme.pageMargin)
+            .padding(.bottom, Theme.chartPageBottomGap)
             .background(Theme.background)
         }
         // Keyed by the instrument, so a new instrument also gets its fetch
@@ -58,6 +61,14 @@ struct InstrumentChartView: View {
                 .lineLimit(1)
                 .minimumScaleFactor(0.4)
                 .accessibilityIdentifier("chartTitle")
+            // The full code always shows: a long name gets smaller first.
+            if let currency = viewModel.currency {
+                Text(currency)
+                    .font(Theme.chartCurrencyFont)
+                    .foregroundStyle(Theme.mutedText)
+                    .fixedSize()
+                    .padding(.leading, Theme.chartCurrencyGap)
+            }
             Spacer()
             Button(action: onClose) {
                 Image(systemName: "xmark")
@@ -153,22 +164,11 @@ struct InstrumentChartView: View {
         .chartYScale(domain: yAxisDomain)
     }
 
-    /// A faint, regular grid, so a point in between is easier to place,
-    /// plus the first and the last date below the ends of the line. The
-    /// dates have no grid line or tick: the line ends show their place.
-    @AxisContentBuilder
+    /// A faint, regular grid, so a point in between is easier to place.
+    /// No dates: the selected range button tells the period.
     private var xAxisMarks: some AxisContent {
         AxisMarks(values: .automatic(desiredCount: 4)) { _ in
             AxisGridLine().foregroundStyle(Theme.separator.opacity(0.3))
-        }
-        AxisMarks(values: xAxisExtremes) { value in
-            AxisValueLabel(anchor: value.as(Date.self) == xAxisExtremes.first ? .topLeading : .topTrailing) {
-                if let date = value.as(Date.self) {
-                    Text(Formatting.chartAxisDate(date))
-                        .font(Theme.chartAxisFont)
-                        .foregroundStyle(Theme.text)
-                }
-            }
         }
     }
 
@@ -236,17 +236,6 @@ struct InstrumentChartView: View {
         }
         let margin = (maxClose - minClose) * 0.1
         return (minClose - margin)...(maxClose + margin)
-    }
-
-    /// The first and last date in the shown range -- the x-axis always
-    /// labels exactly these two, at the plot's left and right edges,
-    /// rather than whatever month boundary Swift Charts would pick
-    /// automatically.
-    private var xAxisExtremes: [Date] {
-        guard let first = viewModel.points.first?.date, let last = viewModel.points.last?.date, first != last else {
-            return viewModel.points.first.map { [$0.date] } ?? []
-        }
-        return [first, last]
     }
 }
 

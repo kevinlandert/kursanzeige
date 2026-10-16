@@ -14,7 +14,7 @@ struct RetryingPriceFetcher: PriceFetching {
         self.sleeper = sleeper
     }
 
-    func fetchCloses(for symbol: String) async throws -> [ClosePoint] {
+    func fetchCloses(for symbol: String) async throws -> FetchedCloses {
         var attempt = 1
         while true {
             do {

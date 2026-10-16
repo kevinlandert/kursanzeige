@@ -14,11 +14,11 @@ struct ChartPager: View {
 
     @State private var chart: InstrumentChartViewModel
     @State private var lastStep: PageStep = .next
-    @State private var reader: ChartReader
+    @State private var reader: PageReader
 
     init(firstChart: InstrumentChartViewModel, mainViewModel: MainViewModel, speaker: Speaking, onClose: @escaping () -> Void) {
         _chart = State(initialValue: firstChart)
-        _reader = State(initialValue: ChartReader(speaker: speaker))
+        _reader = State(initialValue: PageReader(speaker: speaker))
         self.mainViewModel = mainViewModel
         self.onClose = onClose
     }

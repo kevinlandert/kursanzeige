@@ -27,6 +27,9 @@ public final class MainViewModel {
     /// than just a count.
     public private(set) var failedFetches: [FailedFetch] = []
     public var totalInstrumentCount: Int { instruments.count }
+    /// The text "Vorlesen" reads on the main page: the shown rows, in the
+    /// order of the table.
+    public var spokenTable: String { TableSpeech.text(group: selectedGroup, rows: displayedRows) }
 
     /// The list bundled with this build of the app, exactly as passed in at
     /// init -- never mutated after that. Used only as the seed for a fresh

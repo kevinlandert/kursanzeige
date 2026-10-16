@@ -22,7 +22,7 @@ private actor ScriptedFetcher: PriceFetching {
         self.scripts = scripts
     }
 
-    func fetchCloses(for symbol: String) async throws -> [ClosePoint] {
+    func fetchCloses(for symbol: String) async throws -> FetchedCloses {
         callCounts[symbol, default: 0] += 1
         guard var remaining = scripts[symbol], !remaining.isEmpty else {
             throw FetchError.network
@@ -30,7 +30,7 @@ private actor ScriptedFetcher: PriceFetching {
         let next = remaining.removeFirst()
         scripts[symbol] = remaining
         switch next {
-        case .success(let points): return points
+        case .success(let points): return FetchedCloses(closes: points)
         case .failure(let error): throw error
         }
     }
@@ -46,7 +46,7 @@ struct RetryingPriceFetcherTests {
 
         let result = try await fetcher.fetchCloses(for: "AAA")
 
-        #expect(result == points)
+        #expect(result.closes == points)
         #expect(await sleeper.requestedDelays.isEmpty)
         #expect(await underlying.callCounts["AAA"] == 1)
     }
@@ -61,7 +61,7 @@ struct RetryingPriceFetcherTests {
 
         let result = try await fetcher.fetchCloses(for: "BBB")
 
-        #expect(result == points)
+        #expect(result.closes == points)
         #expect(await underlying.callCounts["BBB"] == 3)
         #expect(await sleeper.requestedDelays.count == 2)
     }

@@ -40,9 +40,10 @@ struct YahooFinanceClientTests {
         MockURLProtocol.stub = { _ in (200, json, [:]) }
         let client = YahooFinanceClient(session: mockSession())
 
-        let points = try await client.fetchCloses(for: "NESN.SW")
+        let fetched = try await client.fetchCloses(for: "NESN.SW")
 
-        #expect(!points.isEmpty)
+        #expect(!fetched.closes.isEmpty)
+        #expect(fetched.currency == "CHF")
     }
 
     @Test func mapsHttp404ToNotFound() async throws {

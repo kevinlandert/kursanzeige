@@ -11,14 +11,14 @@ private final class RecordingSpeaker: Speaking {
 }
 
 @MainActor
-private func createReader() -> (ChartReader, RecordingSpeaker) {
+private func createReader() -> (PageReader, RecordingSpeaker) {
     let speaker = RecordingSpeaker()
-    return (ChartReader(speaker: speaker), speaker)
+    return (PageReader(speaker: speaker), speaker)
 }
 
-@Suite("ChartReader")
+@Suite("PageReader")
 @MainActor
-struct ChartReaderTests {
+struct PageReaderTests {
     @Test("a new reader is off and says nothing")
     func newReaderIsOff() {
         let (reader, speaker) = createReader()
@@ -27,8 +27,8 @@ struct ChartReaderTests {
         #expect(speaker.calls.isEmpty)
     }
 
-    @Test("a tap when off reads the shown chart")
-    func tapWhenOffReadsShownChart() {
+    @Test("a tap when off reads the shown page")
+    func tapWhenOffReadsShownPage() {
         let (reader, speaker) = createReader()
 
         reader.toggle(shownText: "Dow Jones, 1 Jahr")
@@ -48,8 +48,8 @@ struct ChartReaderTests {
         #expect(speaker.calls.last == "stop")
     }
 
-    @Test("when on, a new chart stops the old text and reads the new one")
-    func newChartIsReadWhenOn() {
+    @Test("when on, a new page text stops the old text and reads the new one")
+    func newPageTextIsReadWhenOn() {
         let (reader, speaker) = createReader()
         reader.toggle(shownText: "Dow Jones, 1 Jahr")
 
@@ -58,8 +58,8 @@ struct ChartReaderTests {
         #expect(speaker.calls.suffix(2) == ["stop", "speak: DAX, 1 Jahr"])
     }
 
-    @Test("when on, a new chart without data stops the old text")
-    func newChartWithoutDataStopsOldText() {
+    @Test("when on, a new page without data stops the old text")
+    func newPageWithoutDataStopsOldText() {
         let (reader, speaker) = createReader()
         reader.toggle(shownText: "Dow Jones, 1 Jahr")
 
@@ -69,8 +69,8 @@ struct ChartReaderTests {
         #expect(speaker.calls.last == "stop")
     }
 
-    @Test("when off, a new chart is not read")
-    func newChartIsNotReadWhenOff() {
+    @Test("when off, a new page text is not read")
+    func newPageTextIsNotReadWhenOff() {
         let (reader, speaker) = createReader()
 
         reader.readIfOn("DAX, 1 Jahr")
@@ -78,8 +78,8 @@ struct ChartReaderTests {
         #expect(speaker.calls.isEmpty)
     }
 
-    @Test("a tap before the chart has data reads the chart when the data arrives")
-    func chartWithoutDataIsReadWhenDataComes() {
+    @Test("a tap before the page has data reads the page when the data arrives")
+    func pageWithoutDataIsReadWhenDataComes() {
         let (reader, speaker) = createReader()
 
         reader.toggle(shownText: nil)
@@ -90,8 +90,8 @@ struct ChartReaderTests {
         #expect(speaker.calls.filter { $0.hasPrefix("speak") }.count == 1)
     }
 
-    @Test("a closed chart page stops the voice and turns the reader off")
-    func closedChartPageStopsVoiceAndTurnsOff() {
+    @Test("a closed page stops the voice and turns the reader off")
+    func closedPageStopsVoiceAndTurnsOff() {
         let (reader, speaker) = createReader()
         reader.toggle(shownText: "Dow Jones, 1 Jahr")
 

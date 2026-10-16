@@ -36,7 +36,7 @@ struct RefreshCoordinator {
         // function that captures `group` adds the tasks to a copy of the
         // group in a Release build. The group then ends at once, and the
         // app crashes when a task finishes.
-        await withTaskGroup(of: (Instrument, Result<[ClosePoint], Error>).self) { group in
+        await withTaskGroup(of: (Instrument, Result<FetchedCloses, Error>).self) { group in
             var pending = instruments.makeIterator()
             for _ in 0..<maxConcurrency {
                 guard let instrument = pending.next() else { break }
@@ -45,10 +45,10 @@ struct RefreshCoordinator {
 
             while let (instrument, result) = await group.next() {
                 switch result {
-                case .success(let closes):
-                    let history = PriceHistory(closes: closes, fetchedAt: referenceDate)
+                case .success(let fetched):
+                    let history = PriceHistory(closes: fetched.closes, currency: fetched.currency, fetchedAt: referenceDate)
                     let changes = PerformanceCalculator.changes(closes: history.closes, asOf: referenceDate, calendar: calendar)
-                    rows.append(.combining(instrument, changes))
+                    rows.append(.combining(instrument, changes, currency: fetched.currency))
                     histories[instrument.symbol] = history
                 case .failure(let error):
                     failures.append(FetchFailure(symbol: instrument.symbol, error: (error as? FetchError) ?? .network))
@@ -66,7 +66,7 @@ struct RefreshCoordinator {
 
     /// Gives the error as a value, so one failed symbol does not stop the
     /// other fetches.
-    private func fetchResult(for instrument: Instrument) async -> (Instrument, Result<[ClosePoint], Error>) {
+    private func fetchResult(for instrument: Instrument) async -> (Instrument, Result<FetchedCloses, Error>) {
         do {
             return (instrument, .success(try await fetcher.fetchCloses(for: instrument.symbol)))
         } catch {

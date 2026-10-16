@@ -31,6 +31,23 @@ struct FileSnapshotCacheTests {
         #expect(loaded == snapshot)
     }
 
+    /// A file from an older version of the app has rows without a
+    /// currency. The table must still show its prices after an update.
+    @Test("a stored row without a currency loads, with no currency")
+    func rowWithoutCurrencyLoads() throws {
+        let directory = try makeTempDirectory()
+        var json = try JSONSerialization.jsonObject(with: JSONEncoder().encode(sampleSnapshot())) as! [String: Any]
+        var rows = json["rows"] as! [[String: Any]]
+        rows[0]["currency"] = nil
+        json["rows"] = rows
+        try JSONSerialization.data(withJSONObject: json).write(to: directory.appendingPathComponent("snapshot.json"))
+
+        let loaded = FileSnapshotCache(directory: directory).load()
+
+        #expect(loaded?.rows.first?.price == 77.96)
+        #expect(loaded?.rows.first?.currency == nil)
+    }
+
     @Test func secondSaveOverwritesFirst() throws {
         let cache = FileSnapshotCache(directory: try makeTempDirectory())
         cache.save(sampleSnapshot())

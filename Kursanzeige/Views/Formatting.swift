@@ -56,12 +56,6 @@ enum Formatting {
         return "Stand: \(date.formatted(.dateTime.locale(swissLocale).day(.twoDigits).month(.twoDigits).year().hour().minute()))"
     }
 
-    /// Short date for the chart's x-axis start/end labels, e.g. "15.10.25"
-    /// -- compact enough to fit at either edge of the plot at a large font.
-    static func chartAxisDate(_ date: Date) -> String {
-        date.formatted(.dateTime.locale(swissLocale).day(.twoDigits).month(.twoDigits).year(.twoDigits))
-    }
-
     /// German label for a chart range button.
     static func chartRangeLabel(_ range: ChartRange) -> String {
         switch range {

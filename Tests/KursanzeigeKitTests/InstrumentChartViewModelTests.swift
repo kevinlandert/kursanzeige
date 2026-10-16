@@ -18,7 +18,7 @@ private func close(_ year: Int, _ month: Int, _ day: Int, _ value: Double) -> Cl
 
 /// One close exactly on the start of the one-year and the three-month
 /// range, and closes between them, so every range shows a different set.
-private func createStoredHistory() -> PriceHistory {
+private func createStoredHistory(currency: String? = nil) -> PriceHistory {
     PriceHistory(
         closes: [
             close(2022, 3, 1, 10),
@@ -28,6 +28,7 @@ private func createStoredHistory() -> PriceHistory {
             close(2026, 9, 1, 80),
             close(2026, 10, 15, 65),
         ],
+        currency: currency,
         fetchedAt: fetchTime
     )
 }
@@ -36,16 +37,18 @@ private func createStoredHistory() -> PriceHistory {
 /// the view model went to the network at all.
 private actor CountingFetcher: PriceFetching {
     private let result: Result<[ClosePoint], FetchError>
+    private let currency: String?
     private(set) var callCount = 0
 
-    init(_ result: Result<[ClosePoint], FetchError> = .success([])) {
+    init(_ result: Result<[ClosePoint], FetchError> = .success([]), currency: String? = nil) {
         self.result = result
+        self.currency = currency
     }
 
-    func fetchCloses(for symbol: String) async throws -> [ClosePoint] {
+    func fetchCloses(for symbol: String) async throws -> FetchedCloses {
         callCount += 1
         switch result {
-        case .success(let points): return points
+        case .success(let points): return FetchedCloses(closes: points, currency: currency)
         case .failure(let error): throw error
         }
     }
@@ -140,6 +143,30 @@ struct InstrumentChartViewModelTests {
         #expect(viewModel.spokenSummary(rangeName: "1 Jahr") == "Nestlé, 1 Jahr, 65, plus 62,5 Prozent")
     }
 
+    @Test("the spoken summary gives the currency after the last close")
+    func spokenSummaryGivesCurrencyAfterLastClose() {
+        let viewModel = createViewModel(storedHistory: createStoredHistory(currency: "CHF"), fetcher: CountingFetcher())
+
+        #expect(viewModel.spokenSummary(rangeName: "1 Jahr") == "Nestlé, 1 Jahr, 65 Franken, plus 62,5 Prozent")
+    }
+
+    @Test("the chart gives the currency of the stored history")
+    func chartGivesCurrencyOfStoredHistory() {
+        let viewModel = createViewModel(storedHistory: createStoredHistory(currency: "CHF"), fetcher: CountingFetcher())
+
+        #expect(viewModel.currency == "CHF")
+    }
+
+    @Test("a fetched history gives its currency to the chart")
+    func fetchedHistoryGivesCurrencyToChart() async {
+        let fetcher = CountingFetcher(.success([close(2026, 10, 15, 101)]), currency: "USD")
+        let viewModel = createViewModel(storedHistory: nil, fetcher: fetcher)
+
+        await viewModel.load()
+
+        #expect(viewModel.currency == "USD")
+    }
+
     @Test("minClose and maxClose span only the shown range")
     func minAndMaxCloseSpanShownRange() {
         let viewModel = createViewModel(storedHistory: createStoredHistory(), fetcher: CountingFetcher())
@@ -222,17 +249,17 @@ struct InstrumentChartViewModelTests {
 /// A `PriceFetching` whose `fetchCloses` call waits until the test resolves
 /// it -- for keeping a fetch in flight while the test acts.
 private actor ManualFetcher: PriceFetching {
-    private var continuation: CheckedContinuation<[ClosePoint], Error>?
+    private var continuation: CheckedContinuation<FetchedCloses, Error>?
     private(set) var callCount = 0
 
-    func fetchCloses(for symbol: String) async throws -> [ClosePoint] {
+    func fetchCloses(for symbol: String) async throws -> FetchedCloses {
         callCount += 1
         return try await withCheckedThrowingContinuation { continuation = $0 }
     }
 
     func resolve(_ result: Result<[ClosePoint], FetchError>) {
         switch result {
-        case .success(let points): continuation?.resume(returning: points)
+        case .success(let points): continuation?.resume(returning: FetchedCloses(closes: points))
         case .failure(let error): continuation?.resume(throwing: error)
         }
         continuation = nil
@@ -259,11 +286,11 @@ private actor SwitchingFetcher: PriceFetching {
         self.secondResult = secondResult
     }
 
-    func fetchCloses(for symbol: String) async throws -> [ClosePoint] {
+    func fetchCloses(for symbol: String) async throws -> FetchedCloses {
         callCount += 1
         let result = callCount == 1 ? firstResult : secondResult
         switch result {
-        case .success(let points): return points
+        case .success(let points): return FetchedCloses(closes: points)
         case .failure(let error): throw error
         }
     }

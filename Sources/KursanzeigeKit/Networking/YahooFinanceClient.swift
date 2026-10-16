@@ -26,7 +26,7 @@ struct YahooFinanceClient: PriceFetching {
         self.requestTimeout = requestTimeout
     }
 
-    func fetchCloses(for symbol: String) async throws -> [ClosePoint] {
+    func fetchCloses(for symbol: String) async throws -> FetchedCloses {
         // Deliberately not `.urlPathAllowed`: that set is meant for encoding
         // a whole path, so it leaves "/" unescaped -- which turns a symbol
         // containing a slash into extra path segments instead of one opaque
@@ -70,7 +70,7 @@ struct YahooFinanceClient: PriceFetching {
 
         do {
             let decoded = try JSONDecoder().decode(YahooChartResponse.self, from: data)
-            return try decoded.closePoints()
+            return try decoded.fetchedCloses()
         } catch is YahooChartResponse.ConversionError {
             throw FetchError.notFound
         } catch {

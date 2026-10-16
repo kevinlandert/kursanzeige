@@ -1,11 +1,14 @@
 import SwiftUI
 
-/// The big "Vorlesen" button above "Vorheriger" and "Nächster". A tap
-/// sets read aloud on and reads the chart. The next tap stops the voice.
+/// The big "Vorlesen" button below the table and above "Vorheriger" and
+/// "Nächster" on the chart page. A tap sets read aloud on and reads the
+/// page. The next tap stops the voice.
 /// On: blue with white sound waves. Off: grey with a speaker in text color and a
 /// border, so it does not look like a disabled button.
 struct ReadAloudButton: View {
     let isOn: Bool
+    /// Each page has its own value, so a UI test finds the right button.
+    let identifier: String
     let action: () -> Void
 
     var body: some View {
@@ -24,14 +27,14 @@ struct ReadAloudButton: View {
         .buttonStyle(.plain)
         .accessibilityLabel("Vorlesen")
         .accessibilityValue(isOn ? "Ein" : "Aus")
-        .accessibilityIdentifier("readAloud")
+        .accessibilityIdentifier(identifier)
     }
 }
 
 #Preview {
     VStack(spacing: 20) {
-        ReadAloudButton(isOn: false) {}
-        ReadAloudButton(isOn: true) {}
+        ReadAloudButton(isOn: false, identifier: "readAloud") {}
+        ReadAloudButton(isOn: true, identifier: "readAloud") {}
     }
     .padding()
 }
