@@ -26,8 +26,9 @@ final class SynthesizerSpeaker: Speaking {
 /// the slide to the next chart. The serial queue keeps the order of
 /// "stop" and "speak". All mutable state is used only on that queue.
 private final class SpeechEngine: NSObject, AVSpeechSynthesizerDelegate, @unchecked Sendable {
-    /// A bit slower than the default voice, so each number is clear.
-    private static let speechRateFactor: Float = 0.9
+    /// A bit faster than the default voice, so a full table does not take
+    /// too long.
+    private static let speechRateFactor: Float = 1.1
     private static let language = "de-DE"
 
     private let queue = DispatchQueue(label: "com.kevinlandert.Kursanzeige.speech", qos: .userInitiated)
