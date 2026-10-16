@@ -93,6 +93,7 @@ struct InstrumentChartView: View {
                         .font(Theme.groupButtonFont)
                         .lineLimit(1)
                         .minimumScaleFactor(0.7)
+                        .padding(.horizontal, Theme.choiceButtonTextInset)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 16)
                         .choiceButtonLook(isSelected: isActive)

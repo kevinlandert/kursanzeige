@@ -18,11 +18,10 @@ struct SettingsView: View {
     @State private var newSymbol = ""
     @State private var showingResetConfirmation = false
 
-    private static let sectionHeaderFont = Theme.font(size: 24, weight: .bold)
-    /// Same size as the constituent name in the list below -- explicitly
-    /// requested, so the Anzeige toggles read as the same visual weight as
-    /// everything else on this screen.
-    private static let rowNameFont = Theme.font(size: 26, weight: .medium)
+    private static let sectionHeaderFont = Theme.font(size: 24)
+    /// The same size as the constituent name in the list below, so the
+    /// "Anzeige" toggles look the same as the other rows on this page.
+    private static let rowNameFont = Theme.font(size: 26)
     private static let rowSymbolFont = Theme.font(size: 22)
     private static let fieldFont = Theme.font(size: 26)
 
@@ -74,7 +73,7 @@ struct SettingsView: View {
                         Button("Zurücksetzen") {
                             showingResetConfirmation = true
                         }
-                        .font(Theme.font(size: 20, weight: .semibold))
+                        .font(Theme.font(size: 20))
                         .foregroundStyle(Theme.negative)
                         // Anchored here, on the button itself, rather than on the
                         // enclosing List: on iPadOS `confirmationDialog` presents
@@ -169,7 +168,7 @@ struct SettingsView: View {
                 // different rows, which read as misaligned.
                 ToolbarItem(placement: .principal) {
                     Text("Einstellungen")
-                        .font(Theme.font(size: 32, weight: .bold))
+                        .font(Theme.font(size: 32))
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {

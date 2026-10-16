@@ -39,18 +39,20 @@ enum Theme {
     private static let fontFamily = "Atkinson Hyperlegible Next"
 
     /// A fixed size, as `Font.system(size:)`: the sizes are already large,
-    /// and Dynamic Type would break the table layout.
-    static func font(size: CGFloat, weight: Font.Weight = .regular) -> Font {
+    /// and Dynamic Type would break the table layout. All text is bold,
+    /// because thick strokes are easier to read with low vision. Only a few
+    /// key numbers use `.heavy`.
+    static func font(size: CGFloat, weight: Font.Weight = .bold) -> Font {
         Font.custom(fontFamily, fixedSize: size).weight(weight)
     }
 
     static let nameFontSize: CGFloat = 30
-    static let nameFont = font(size: nameFontSize, weight: .semibold)
-    static let valueFont = font(size: 30, weight: .bold).monospacedDigit()
+    static let nameFont = font(size: nameFontSize)
+    static let valueFont = font(size: 30).monospacedDigit()
     /// Just the leading +/− sign on a value cell: bigger and heavier than the
     /// digits so direction reads before color does.
     static let signFont = font(size: 34, weight: .heavy).monospacedDigit()
-    static let headerFont = font(size: 26, weight: .bold)
+    static let headerFont = font(size: 26)
     /// The thick chart line. Its color is different from `positive` and
     /// `negative`, so the line never looks like a rise or a fall.
     static let chartLineColor = Color.palette(\.chartLine)
@@ -64,13 +66,13 @@ enum Theme {
     static let chartAxisFont = font(size: 46, weight: .heavy).monospacedDigit()
     /// The instrument name. A long name shrinks to one line, so the chart
     /// keeps its height.
-    static let chartTitleFont = font(size: 128, weight: .bold)
+    static let chartTitleFont = font(size: 128)
     /// The currency next to the title. Half the title size: the name
     /// stays the main text.
-    static let chartCurrencyFont = font(size: 64, weight: .bold)
+    static let chartCurrencyFont = font(size: 64)
     static let chartCurrencyGap: CGFloat = 16
     /// "Lädt …" and the error text in place of the chart.
-    static let chartMessageFont = font(size: 64, weight: .bold)
+    static let chartMessageFont = font(size: 64)
     /// The whole-range percent-change line below the chart -- deliberately
     /// the single biggest text on this screen, since it's the one-number
     /// summary of everything else on it.
@@ -95,7 +97,7 @@ enum Theme {
     /// moves away. The labels are large, so they need a wide gap.
     static let chartCurrentPriceLabelGapShare: Double = 0.16
     /// "Vorheriger" and "Nächster" below the chart.
-    static let chartNavigationFont = font(size: 40, weight: .bold)
+    static let chartNavigationFont = font(size: 40)
     /// The largest part of the chart page height that the chart takes.
     /// More makes the title shrink, because the page has no more space.
     static let chartHeightShare: CGFloat = 0.45
@@ -110,11 +112,14 @@ enum Theme {
     /// Grey text on a grey button: it shows "not available" at once. The
     /// grey has a tested contrast, so the text stays clear.
     static let disabledButtonForeground = mutedText
-    static let groupButtonFont = font(size: 24, weight: .semibold)
-    static let refreshButtonFont = font(size: 26, weight: .bold)
-    static let statusFont = font(size: 20, weight: .medium)
-    static let timestampFont = font(size: 24, weight: .semibold)
-    static let progressFont = font(size: 22, weight: .bold)
+    /// The smallest gap between the text and the border of a choice
+    /// button. A longer word gets smaller and does not touch the border.
+    static let choiceButtonTextInset: CGFloat = 8
+    static let groupButtonFont = font(size: 24)
+    static let refreshButtonFont = font(size: 26)
+    static let statusFont = font(size: 20)
+    static let timestampFont = font(size: 24)
+    static let progressFont = font(size: 22)
 
     static let rowVerticalPadding: CGFloat = 14
     /// Floor for row height: two lines of `nameFont` at ~1.1x tight line
