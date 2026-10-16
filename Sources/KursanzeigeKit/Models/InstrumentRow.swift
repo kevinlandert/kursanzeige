@@ -11,8 +11,8 @@ public struct InstrumentRow: Codable, Equatable, Identifiable, Sendable {
     public let oneYearChangePercent: Double?
     public let yearToDateChangePercent: Double?
     public let oneMonthChangePercent: Double?
-    /// Only for the spoken table, not shown. See `FetchedCloses.currency`.
-    public let currency: String?
+    /// Only for the spoken table, not shown. See `PriceUnitRule`.
+    public let unit: PriceUnit?
 
     public var id: String { instrument.symbol }
 
@@ -25,7 +25,7 @@ public struct InstrumentRow: Codable, Equatable, Identifiable, Sendable {
         oneYearChangePercent: Double?,
         yearToDateChangePercent: Double? = nil,
         oneMonthChangePercent: Double? = nil,
-        currency: String? = nil
+        unit: PriceUnit? = nil
     ) {
         self.instrument = instrument
         self.price = price
@@ -35,7 +35,7 @@ public struct InstrumentRow: Codable, Equatable, Identifiable, Sendable {
         self.oneYearChangePercent = oneYearChangePercent
         self.yearToDateChangePercent = yearToDateChangePercent
         self.oneMonthChangePercent = oneMonthChangePercent
-        self.currency = currency
+        self.unit = unit
     }
 
     /// A row for an instrument with no data yet (before the first successful fetch).
@@ -53,7 +53,7 @@ public struct InstrumentRow: Codable, Equatable, Identifiable, Sendable {
     }
 
     /// Combines a fixed instrument with freshly computed performance changes.
-    static func combining(_ instrument: Instrument, _ changes: PerformanceChanges, currency: String?) -> InstrumentRow {
+    static func combining(_ instrument: Instrument, _ changes: PerformanceChanges, unit: PriceUnit?) -> InstrumentRow {
         InstrumentRow(
             instrument: instrument,
             price: changes.latestPrice,
@@ -63,7 +63,7 @@ public struct InstrumentRow: Codable, Equatable, Identifiable, Sendable {
             oneYearChangePercent: changes.oneYearChangePercent,
             yearToDateChangePercent: changes.yearToDateChangePercent,
             oneMonthChangePercent: changes.oneMonthChangePercent,
-            currency: currency
+            unit: unit
         )
     }
 }

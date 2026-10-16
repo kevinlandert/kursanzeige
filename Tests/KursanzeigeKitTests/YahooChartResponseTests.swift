@@ -39,14 +39,25 @@ struct YahooChartResponseTests {
     func stockGivesCurrency() throws {
         let fetched = try loadFixture("NESN.SW").fetchedCloses()
 
-        #expect(fetched.currency == "CHF")
+        #expect(fetched.unit == .currency("CHF"))
     }
 
-    @Test("an exchange rate gives no currency")
-    func exchangeRateGivesNoCurrency() throws {
+    @Test("an exchange rate gives no unit")
+    func exchangeRateGivesNoUnit() throws {
         let fetched = try loadFixture("EURCHF=X").fetchedCloses()
 
-        #expect(fetched.currency == nil)
+        #expect(fetched.unit == nil)
+    }
+
+    @Test("an index gives points as unit")
+    func indexGivesPoints() throws {
+        let json = #"{"chart":{"result":[{"meta":{"symbol":"^SSMI","currency":"CHF","instrumentType":"INDEX"},"timestamp":[1792000000],"indicators":{"quote":[{"close":[12345.6]}]}}],"error":null}}"#
+        let response = try JSONDecoder().decode(YahooChartResponse.self, from: Data(json.utf8))
+
+        let fetched = try response.fetchedCloses()
+
+        #expect(fetched.unit == .points)
+        #expect(fetched.closes.map(\.close) == [12345.6])
     }
 
     @Test("a London stock in pence gives its closes in pounds")
@@ -56,7 +67,7 @@ struct YahooChartResponseTests {
 
         let fetched = try response.fetchedCloses()
 
-        #expect(fetched.currency == "GBP")
+        #expect(fetched.unit == .currency("GBP"))
         #expect(fetched.closes.map(\.close) == [39.12])
     }
 

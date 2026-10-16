@@ -28,6 +28,9 @@ targets:
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
         UISupportedInterfaceOrientations~ipad: [UIInterfaceOrientationPortrait]
         CFBundleDisplayName: Kursanzeige
+        # Atkinson Hyperlegible Next, see Theme.font. OFL.txt next to it is
+        # its license.
+        UIAppFonts: [AtkinsonHyperlegibleNext-Variable.ttf]
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         # The app uses only HTTPS, which is exempt. Without this key, each

@@ -13,12 +13,12 @@ struct FailedInstrumentsSheet: View {
             List(failedFetches) { failure in
                 VStack(alignment: .leading, spacing: 4) {
                     Text(failure.instrument.name)
-                        .font(.system(size: 24, weight: .semibold))
+                        .font(Theme.font(size: 24, weight: .semibold))
                     Text("\(failure.instrument.symbol) · \(failure.instrument.group.displayName)")
-                        .font(.system(size: 18))
+                        .font(Theme.font(size: 18))
                         .foregroundStyle(Theme.mutedText)
                     Text(failure.reason)
-                        .font(.system(size: 18, weight: .medium))
+                        .font(Theme.font(size: 18, weight: .medium))
                         .foregroundStyle(Theme.negative)
                 }
                 .padding(.vertical, 6)
@@ -26,9 +26,15 @@ struct FailedInstrumentsSheet: View {
             .navigationTitle("Nicht geladen")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                // The same large title in the app font as on the settings
+                // page.
+                ToolbarItem(placement: .principal) {
+                    Text("Nicht geladen")
+                        .font(Theme.font(size: 32, weight: .bold))
+                }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Fertig") { dismiss() }
-                        .font(.system(size: 20, weight: .semibold))
+                        .font(Theme.font(size: 20, weight: .semibold))
                 }
             }
         }

@@ -31,13 +31,26 @@ enum Theme {
     // the solid system line, and it also changes with dark mode.
     static let separator = Color(uiColor: .opaqueSeparator)
 
+    /// Atkinson Hyperlegible Next, from the Braille Institute. It makes
+    /// similar letters and digits clearly different for low vision, e.g.
+    /// "I", "l" and "1". Its weights go from 200 to 800: `.heavy` shows as
+    /// 800. The digits of `monospacedDigit()` have the same width, so the
+    /// table columns stay in line.
+    private static let fontFamily = "Atkinson Hyperlegible Next"
+
+    /// A fixed size, as `Font.system(size:)`: the sizes are already large,
+    /// and Dynamic Type would break the table layout.
+    static func font(size: CGFloat, weight: Font.Weight = .regular) -> Font {
+        Font.custom(fontFamily, fixedSize: size).weight(weight)
+    }
+
     static let nameFontSize: CGFloat = 30
-    static let nameFont = Font.system(size: nameFontSize, weight: .semibold)
-    static let valueFont = Font.system(size: 30, weight: .bold).monospacedDigit()
+    static let nameFont = font(size: nameFontSize, weight: .semibold)
+    static let valueFont = font(size: 30, weight: .bold).monospacedDigit()
     /// Just the leading +/− sign on a value cell: bigger and heavier than the
     /// digits so direction reads before color does.
-    static let signFont = Font.system(size: 34, weight: .heavy).monospacedDigit()
-    static let headerFont = Font.system(size: 26, weight: .bold)
+    static let signFont = font(size: 34, weight: .heavy).monospacedDigit()
+    static let headerFont = font(size: 26, weight: .bold)
     /// The thick chart line. Its color is different from `positive` and
     /// `negative`, so the line never looks like a rise or a fall.
     static let chartLineColor = Color.palette(\.chartLine)
@@ -48,20 +61,20 @@ enum Theme {
     static let chartLineInset: CGFloat = chartLineWidth
     /// The high, low and current labels on the right axis: large and bold
     /// so they read at a glance, as every other number in this app.
-    static let chartAxisFont = Font.system(size: 46, weight: .heavy).monospacedDigit()
+    static let chartAxisFont = font(size: 46, weight: .heavy).monospacedDigit()
     /// The instrument name. A long name shrinks to one line, so the chart
     /// keeps its height.
-    static let chartTitleFont = Font.system(size: 128, weight: .bold)
+    static let chartTitleFont = font(size: 128, weight: .bold)
     /// The currency next to the title. Half the title size: the name
     /// stays the main text.
-    static let chartCurrencyFont = Font.system(size: 64, weight: .bold)
+    static let chartCurrencyFont = font(size: 64, weight: .bold)
     static let chartCurrencyGap: CGFloat = 16
     /// "Lädt …" and the error text in place of the chart.
-    static let chartMessageFont = Font.system(size: 64, weight: .bold)
+    static let chartMessageFont = font(size: 64, weight: .bold)
     /// The whole-range percent-change line below the chart -- deliberately
     /// the single biggest text on this screen, since it's the one-number
     /// summary of everything else on it.
-    static let chartRangeChangeFont = Font.system(size: 84, weight: .heavy).monospacedDigit()
+    static let chartRangeChangeFont = font(size: 84, weight: .heavy).monospacedDigit()
     static let chartCloseButtonSize: CGFloat = 100
     /// Extra gap between the chart's right-hand axis labels and the plot's
     /// own border, beyond Swift Charts' default spacing -- otherwise the
@@ -82,7 +95,7 @@ enum Theme {
     /// moves away. The labels are large, so they need a wide gap.
     static let chartCurrentPriceLabelGapShare: Double = 0.16
     /// "Vorheriger" and "Nächster" below the chart.
-    static let chartNavigationFont = Font.system(size: 40, weight: .bold)
+    static let chartNavigationFont = font(size: 40, weight: .bold)
     /// The largest part of the chart page height that the chart takes.
     /// More makes the title shrink, because the page has no more space.
     static let chartHeightShare: CGFloat = 0.45
@@ -97,11 +110,11 @@ enum Theme {
     /// Grey text on a grey button: it shows "not available" at once. The
     /// grey has a tested contrast, so the text stays clear.
     static let disabledButtonForeground = mutedText
-    static let groupButtonFont = Font.system(size: 24, weight: .semibold)
-    static let refreshButtonFont = Font.system(size: 26, weight: .bold)
-    static let statusFont = Font.system(size: 20, weight: .medium)
-    static let timestampFont = Font.system(size: 24, weight: .semibold)
-    static let progressFont = Font.system(size: 22, weight: .bold)
+    static let groupButtonFont = font(size: 24, weight: .semibold)
+    static let refreshButtonFont = font(size: 26, weight: .bold)
+    static let statusFont = font(size: 20, weight: .medium)
+    static let timestampFont = font(size: 24, weight: .semibold)
+    static let progressFont = font(size: 22, weight: .bold)
 
     static let rowVerticalPadding: CGFloat = 14
     /// Floor for row height: two lines of `nameFont` at ~1.1x tight line

@@ -6,12 +6,16 @@ import Foundation
 enum SpokenNumber {
     private static let germanLocale = Locale(identifier: "de_DE")
 
-    /// The currency word follows the number, e.g. "77,96 Franken".
-    static func price(_ price: Double, group: MarketGroup, currency: String?) -> String {
+    /// The unit word follows the number, e.g. "77,96 Franken" or
+    /// "12.346 Punkte".
+    static func price(_ price: Double, group: MarketGroup, unit: PriceUnit?) -> String {
         let maximumDecimals = PricePrecision.maximumFractionDigits(for: price, group: group)
         let number = price.formatted(.number.locale(germanLocale).precision(.fractionLength(0...maximumDecimals)).grouping(.automatic))
-        guard let currency else { return number }
-        return "\(number) \(SpokenCurrency.name(for: currency))"
+        switch unit {
+        case .currency(let code): return "\(number) \(SpokenCurrency.name(for: code))"
+        case .points: return "\(number) Punkte"
+        case nil: return number
+        }
     }
 
     /// "plus" or "minus" before the value. A change that rounds to zero

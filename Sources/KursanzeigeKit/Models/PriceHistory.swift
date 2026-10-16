@@ -7,23 +7,23 @@ import Foundation
 struct PriceHistory: Codable, Equatable, Sendable {
     /// Sorted oldest to newest.
     let closes: [ClosePoint]
-    /// See `FetchedCloses.currency`.
-    let currency: String?
+    /// See `PriceUnitRule`.
+    let unit: PriceUnit?
     let fetchedAt: Date
 
-    init(closes: [ClosePoint], currency: String? = nil, fetchedAt: Date) {
+    init(closes: [ClosePoint], unit: PriceUnit? = nil, fetchedAt: Date) {
         self.closes = closes.sorted { $0.date < $1.date }
-        self.currency = currency
+        self.unit = unit
         self.fetchedAt = fetchedAt
     }
 
     /// Sorts the closes again, because a stored file is external data. A
-    /// file from an older version of the app has no currency.
+    /// file from an older version of the app has no unit.
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.init(
             closes: try container.decode([ClosePoint].self, forKey: .closes),
-            currency: try container.decodeIfPresent(String.self, forKey: .currency),
+            unit: try container.decodeIfPresent(PriceUnit.self, forKey: .unit),
             fetchedAt: try container.decode(Date.self, forKey: .fetchedAt)
         )
     }

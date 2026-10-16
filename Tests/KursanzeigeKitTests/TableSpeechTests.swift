@@ -6,7 +6,7 @@ import Testing
 /// and day change of each row, in the order of the table.
 @Suite("TableSpeech")
 struct TableSpeechTests {
-    private func createRow(_ name: String, group: MarketGroup, price: Double?, dayChangePercent: Double?, currency: String? = nil) -> InstrumentRow {
+    private func createRow(_ name: String, group: MarketGroup, price: Double?, dayChangePercent: Double?, unit: PriceUnit? = nil) -> InstrumentRow {
         InstrumentRow(
             instrument: Instrument(symbol: name, name: name, group: group),
             price: price,
@@ -14,7 +14,7 @@ struct TableSpeechTests {
             dayChangePercent: dayChangePercent,
             threeMonthChangePercent: nil,
             oneYearChangePercent: nil,
-            currency: currency
+            unit: unit
         )
     }
 
@@ -41,11 +41,20 @@ struct TableSpeechTests {
 
     @Test("a stock price is followed by the name of its currency")
     func stockPriceIsFollowedByCurrencyName() {
-        let rows = [createRow("Shell", group: .europe, price: 39.12, dayChangePercent: -0.3, currency: "GBP")]
+        let rows = [createRow("Shell", group: .europe, price: 39.12, dayChangePercent: -0.3, unit: .currency("GBP"))]
 
         let text = TableSpeech.text(group: .europe, rows: rows)
 
         #expect(text == "Europa. Shell, 39,12 Pfund, minus 0,3 Prozent.")
+    }
+
+    @Test("an index value is followed by the word Punkte")
+    func indexValueIsFollowedByPoints() {
+        let rows = [createRow("SMI", group: .index, price: 12_345.6, dayChangePercent: 0.54, unit: .points)]
+
+        let text = TableSpeech.text(group: .index, rows: rows)
+
+        #expect(text == "Index. SMI, 12.346 Punkte, plus 0,5 Prozent.")
     }
 
     @Test("a row without a day change ends after the price")

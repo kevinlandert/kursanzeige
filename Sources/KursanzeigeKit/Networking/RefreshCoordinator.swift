@@ -46,9 +46,9 @@ struct RefreshCoordinator {
             while let (instrument, result) = await group.next() {
                 switch result {
                 case .success(let fetched):
-                    let history = PriceHistory(closes: fetched.closes, currency: fetched.currency, fetchedAt: referenceDate)
+                    let history = PriceHistory(closes: fetched.closes, unit: fetched.unit, fetchedAt: referenceDate)
                     let changes = PerformanceCalculator.changes(closes: history.closes, asOf: referenceDate, calendar: calendar)
-                    rows.append(.combining(instrument, changes, currency: fetched.currency))
+                    rows.append(.combining(instrument, changes, unit: fetched.unit))
                     histories[instrument.symbol] = history
                 case .failure(let error):
                     failures.append(FetchFailure(symbol: instrument.symbol, error: (error as? FetchError) ?? .network))

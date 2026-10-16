@@ -43,7 +43,7 @@ struct YahooFinanceClientTests {
         let fetched = try await client.fetchCloses(for: "NESN.SW")
 
         #expect(!fetched.closes.isEmpty)
-        #expect(fetched.currency == "CHF")
+        #expect(fetched.unit == .currency("CHF"))
     }
 
     @Test func mapsHttp404ToNotFound() async throws {

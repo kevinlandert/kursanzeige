@@ -1,8 +1,7 @@
 /// The text read aloud for the table on the main page, e.g. "Schweiz.
 /// Nestlé, 77,96 Franken, plus 0,5 Prozent. …". It gives the name, the
-/// price with its currency and the day change. The table shows no
-/// currency, but the voice tells it, because a number alone is not
-/// clear. A full stop after each row gives the voice a pause.
+/// price with its unit and the day change. The table shows no unit, but
+/// the voice tells it, because a number alone is not clear. A full stop after each row gives the voice a pause.
 /// `SpokenNumber` gives the number format.
 enum TableSpeech {
     /// The group name comes first: after a swipe, the person hears which
@@ -13,7 +12,7 @@ enum TableSpeech {
 
     private static func rowText(_ row: InstrumentRow) -> String {
         guard let price = row.price else { return "\(row.instrument.name), kein Kurs" }
-        let parts = [row.instrument.name, SpokenNumber.price(price, group: row.instrument.group, currency: row.currency)]
+        let parts = [row.instrument.name, SpokenNumber.price(price, group: row.instrument.group, unit: row.unit)]
         guard let dayChangePercent = row.dayChangePercent else { return parts.joined(separator: ", ") }
         return (parts + [SpokenNumber.change(dayChangePercent)]).joined(separator: ", ")
     }

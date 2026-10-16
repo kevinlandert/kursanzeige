@@ -8,14 +8,14 @@ import Foundation
 private actor TrackingFetcher: PriceFetching {
     let failingSymbols: Set<String>
     let delayNanoseconds: UInt64
-    let currency: String?
+    let unit: PriceUnit?
     private var inFlight = 0
     private(set) var peakInFlight = 0
 
-    init(failingSymbols: Set<String> = [], delayNanoseconds: UInt64 = 0, currency: String? = nil) {
+    init(failingSymbols: Set<String> = [], delayNanoseconds: UInt64 = 0, unit: PriceUnit? = nil) {
         self.failingSymbols = failingSymbols
         self.delayNanoseconds = delayNanoseconds
-        self.currency = currency
+        self.unit = unit
     }
 
     func fetchCloses(for symbol: String) async throws -> FetchedCloses {
@@ -28,7 +28,7 @@ private actor TrackingFetcher: PriceFetching {
         if failingSymbols.contains(symbol) {
             throw FetchError.notFound
         }
-        return FetchedCloses(closes: [ClosePoint(date: Date(), close: 100)], currency: currency)
+        return FetchedCloses(closes: [ClosePoint(date: Date(), close: 100)], unit: unit)
     }
 }
 
@@ -68,15 +68,15 @@ struct RefreshCoordinatorTests {
         #expect(log.recorded.last == 1.0)
     }
 
-    @Test("the fetched currency goes to the row and to the history")
-    func fetchedCurrencyGoesToRowAndHistory() async {
+    @Test("the fetched unit goes to the row and to the history")
+    func fetchedUnitGoesToRowAndHistory() async {
         let instruments = makeInstruments(1)
-        let coordinator = RefreshCoordinator(fetcher: TrackingFetcher(currency: "CHF"))
+        let coordinator = RefreshCoordinator(fetcher: TrackingFetcher(unit: .currency("CHF")))
 
         let result = await coordinator.refresh(instruments, asOf: Date()) { _ in }
 
-        #expect(result.rows.first?.currency == "CHF")
-        #expect(result.histories[instruments[0].symbol]?.currency == "CHF")
+        #expect(result.rows.first?.unit == .currency("CHF"))
+        #expect(result.histories[instruments[0].symbol]?.unit == .currency("CHF"))
     }
 
     @Test func failedSymbolsAreReportedAndExcludedFromRows() async {

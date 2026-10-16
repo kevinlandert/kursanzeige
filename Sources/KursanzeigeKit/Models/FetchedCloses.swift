@@ -1,13 +1,12 @@
-/// The daily closes of one symbol from one request, with the currency of
-/// the prices.
+/// The daily closes of one symbol from one request, with the unit of the
+/// prices.
 struct FetchedCloses: Equatable, Sendable {
     let closes: [ClosePoint]
-    /// An ISO code, e.g. "CHF". `nil` when the price is not money: an
-    /// index or an exchange rate. See `PriceCurrency`.
-    let currency: String?
+    /// See `PriceUnitRule`.
+    let unit: PriceUnit?
 
-    init(closes: [ClosePoint], currency: String? = nil) {
+    init(closes: [ClosePoint], unit: PriceUnit? = nil) {
         self.closes = closes
-        self.currency = currency
+        self.unit = unit
     }
 }

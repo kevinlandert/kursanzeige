@@ -40,7 +40,7 @@ public final class InstrumentChartViewModel: Identifiable {
     }
     /// The currency of the prices, e.g. "CHF", next to the title. `nil`
     /// for an index or an exchange rate, or before a history is there.
-    public var currency: String? { history?.currency }
+    public var currency: String? { history?.unit?.currencyCode }
     /// The symbol, so `fullScreenCover(item:)` can present the chart.
     public nonisolated var id: String { instrument.symbol }
 
@@ -89,7 +89,7 @@ public final class InstrumentChartViewModel: Identifiable {
             rangeName: rangeName,
             price: lastClose,
             group: instrument.group,
-            currency: currency,
+            unit: history?.unit,
             changePercent: rangeChangePercent
         )
     }
@@ -103,7 +103,7 @@ public final class InstrumentChartViewModel: Identifiable {
 
         do {
             let fetchedCloses = try await fetcher.fetchCloses(for: instrument.symbol)
-            let fetched = PriceHistory(closes: fetchedCloses.closes, currency: fetchedCloses.currency, fetchedAt: now())
+            let fetched = PriceHistory(closes: fetchedCloses.closes, unit: fetchedCloses.unit, fetchedAt: now())
             history = fetched
             points = makePoints()
             await onFetched(fetched)

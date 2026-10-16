@@ -28,7 +28,7 @@ final class SynthesizerSpeaker: Speaking {
 private final class SpeechEngine: NSObject, AVSpeechSynthesizerDelegate, @unchecked Sendable {
     /// A bit faster than the default voice, so a full table does not take
     /// too long.
-    private static let speechRateFactor: Float = 1.1
+    private static let speechRateFactor: Float = 1.05
     private static let language = "de-DE"
 
     private let queue = DispatchQueue(label: "com.kevinlandert.Kursanzeige.speech", qos: .userInitiated)

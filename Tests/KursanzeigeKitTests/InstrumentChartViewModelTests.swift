@@ -18,7 +18,7 @@ private func close(_ year: Int, _ month: Int, _ day: Int, _ value: Double) -> Cl
 
 /// One close exactly on the start of the one-year and the three-month
 /// range, and closes between them, so every range shows a different set.
-private func createStoredHistory(currency: String? = nil) -> PriceHistory {
+private func createStoredHistory(unit: PriceUnit? = nil) -> PriceHistory {
     PriceHistory(
         closes: [
             close(2022, 3, 1, 10),
@@ -28,7 +28,7 @@ private func createStoredHistory(currency: String? = nil) -> PriceHistory {
             close(2026, 9, 1, 80),
             close(2026, 10, 15, 65),
         ],
-        currency: currency,
+        unit: unit,
         fetchedAt: fetchTime
     )
 }
@@ -37,18 +37,18 @@ private func createStoredHistory(currency: String? = nil) -> PriceHistory {
 /// the view model went to the network at all.
 private actor CountingFetcher: PriceFetching {
     private let result: Result<[ClosePoint], FetchError>
-    private let currency: String?
+    private let unit: PriceUnit?
     private(set) var callCount = 0
 
-    init(_ result: Result<[ClosePoint], FetchError> = .success([]), currency: String? = nil) {
+    init(_ result: Result<[ClosePoint], FetchError> = .success([]), unit: PriceUnit? = nil) {
         self.result = result
-        self.currency = currency
+        self.unit = unit
     }
 
     func fetchCloses(for symbol: String) async throws -> FetchedCloses {
         callCount += 1
         switch result {
-        case .success(let points): return FetchedCloses(closes: points, currency: currency)
+        case .success(let points): return FetchedCloses(closes: points, unit: unit)
         case .failure(let error): throw error
         }
     }
@@ -145,21 +145,29 @@ struct InstrumentChartViewModelTests {
 
     @Test("the spoken summary gives the currency after the last close")
     func spokenSummaryGivesCurrencyAfterLastClose() {
-        let viewModel = createViewModel(storedHistory: createStoredHistory(currency: "CHF"), fetcher: CountingFetcher())
+        let viewModel = createViewModel(storedHistory: createStoredHistory(unit: .currency("CHF")), fetcher: CountingFetcher())
 
         #expect(viewModel.spokenSummary(rangeName: "1 Jahr") == "Nestlé, 1 Jahr, 65 Franken, plus 62,5 Prozent")
     }
 
+    @Test("an index shows no currency, but the spoken summary says Punkte")
+    func indexShowsNoCurrencyButSaysPoints() {
+        let viewModel = createViewModel(storedHistory: createStoredHistory(unit: .points), fetcher: CountingFetcher())
+
+        #expect(viewModel.currency == nil)
+        #expect(viewModel.spokenSummary(rangeName: "1 Jahr") == "Nestlé, 1 Jahr, 65 Punkte, plus 62,5 Prozent")
+    }
+
     @Test("the chart gives the currency of the stored history")
     func chartGivesCurrencyOfStoredHistory() {
-        let viewModel = createViewModel(storedHistory: createStoredHistory(currency: "CHF"), fetcher: CountingFetcher())
+        let viewModel = createViewModel(storedHistory: createStoredHistory(unit: .currency("CHF")), fetcher: CountingFetcher())
 
         #expect(viewModel.currency == "CHF")
     }
 
     @Test("a fetched history gives its currency to the chart")
     func fetchedHistoryGivesCurrencyToChart() async {
-        let fetcher = CountingFetcher(.success([close(2026, 10, 15, 101)]), currency: "USD")
+        let fetcher = CountingFetcher(.success([close(2026, 10, 15, 101)]), unit: .currency("USD"))
         let viewModel = createViewModel(storedHistory: nil, fetcher: fetcher)
 
         await viewModel.load()

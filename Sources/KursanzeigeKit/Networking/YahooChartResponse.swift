@@ -47,7 +47,7 @@ extension YahooChartResponse {
     /// calculator expects: `null` closes and their matching timestamps are
     /// dropped, and points are left in the order Yahoo returned them
     /// (`PerformanceCalculator` sorts defensively regardless). A price in
-    /// a sub unit, e.g. pence, changes to the main unit (see `PriceCurrency`).
+    /// a sub unit, e.g. pence, changes to the main unit (see `PriceUnitRule`).
     func fetchedCloses() throws -> FetchedCloses {
         if let error = chart.error {
             throw ConversionError.apiError(error.description)
@@ -58,11 +58,11 @@ extension YahooChartResponse {
         else {
             throw ConversionError.missingResult
         }
-        let currency = PriceCurrency(instrumentType: result.meta.instrumentType, yahooCurrency: result.meta.currency)
+        let unitRule = PriceUnitRule(instrumentType: result.meta.instrumentType, yahooCurrency: result.meta.currency)
         let points = zip(timestamps, closes).compactMap { timestamp, close -> ClosePoint? in
             guard let close else { return nil }
-            return ClosePoint(date: Date(timeIntervalSince1970: TimeInterval(timestamp)), close: close / currency.priceDivisor)
+            return ClosePoint(date: Date(timeIntervalSince1970: TimeInterval(timestamp)), close: close / unitRule.priceDivisor)
         }
-        return FetchedCloses(closes: points, currency: currency.shownCurrency)
+        return FetchedCloses(closes: points, unit: unitRule.unit)
     }
 }
