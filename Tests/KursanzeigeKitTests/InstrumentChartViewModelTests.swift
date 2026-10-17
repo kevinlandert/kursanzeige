@@ -133,21 +133,21 @@ struct InstrumentChartViewModelTests {
         let viewModel = createViewModel(storedHistory: nil, fetcher: CountingFetcher())
 
         #expect(viewModel.rangeChangePercent == nil)
-        #expect(viewModel.spokenSummary(rangeName: "1 Jahr") == nil)
+        #expect(viewModel.spokenSummary() == nil)
     }
 
     @Test("the spoken summary gives the name, the range, the last close and the range change")
     func spokenSummaryGivesNameRangeLastCloseAndChange() {
         let viewModel = createViewModel(storedHistory: createStoredHistory(), fetcher: CountingFetcher())
 
-        #expect(viewModel.spokenSummary(rangeName: "1 Jahr") == "Nestlé, 1 Jahr, 65, plus 62,5 Prozent")
+        #expect(viewModel.spokenSummary() == "Nestlé, 1 Jahr, 65, plus 62,5 Prozent")
     }
 
     @Test("the spoken summary gives the currency after the last close")
     func spokenSummaryGivesCurrencyAfterLastClose() {
         let viewModel = createViewModel(storedHistory: createStoredHistory(unit: .currency("CHF")), fetcher: CountingFetcher())
 
-        #expect(viewModel.spokenSummary(rangeName: "1 Jahr") == "Nestlé, 1 Jahr, 65 Franken, plus 62,5 Prozent")
+        #expect(viewModel.spokenSummary() == "Nestlé, 1 Jahr, 65 Franken, plus 62,5 Prozent")
     }
 
     @Test("an index shows no currency, but the spoken summary says Punkte")
@@ -155,7 +155,7 @@ struct InstrumentChartViewModelTests {
         let viewModel = createViewModel(storedHistory: createStoredHistory(unit: .points), fetcher: CountingFetcher())
 
         #expect(viewModel.currency == nil)
-        #expect(viewModel.spokenSummary(rangeName: "1 Jahr") == "Nestlé, 1 Jahr, 65 Punkte, plus 62,5 Prozent")
+        #expect(viewModel.spokenSummary() == "Nestlé, 1 Jahr, 65 Punkte, plus 62,5 Prozent")
     }
 
     @Test("the chart gives the currency of the stored history")
@@ -238,19 +238,74 @@ struct InstrumentChartViewModelTests {
         #expect(await received.histories == [PriceHistory(closes: [close(2026, 10, 15, 100)], fetchedAt: fetchTime)])
     }
 
-    @Test("a second load while a fetch is in flight does not fetch again")
-    func secondLoadDuringFetchDoesNotFetchAgain() async {
+    @Test("a second load during a fetch waits for that fetch and does not fetch again")
+    func secondLoadDuringFetchWaitsForIt() async {
         let fetcher = ManualFetcher()
         let viewModel = createViewModel(storedHistory: nil, fetcher: fetcher)
 
         async let firstLoad: Void = viewModel.load()
         await fetcher.waitForFirstCall()
-        await viewModel.load()
+        let secondLoad = Task { await viewModel.load() }
+        await letTasksRun()
         await fetcher.resolve(.success([close(2026, 10, 15, 100)]))
-        await firstLoad
+        await secondLoad.value
 
-        #expect(await fetcher.callCount == 1)
         #expect(viewModel.points.map(\.close) == [100])
+        await firstLoad
+        #expect(await fetcher.callCount == 1)
+    }
+}
+
+@Suite("InstrumentChartViewModel load")
+@MainActor
+struct InstrumentChartViewModelLoadTests {
+    @Test("a cancelled wait for a fetch returns at once, and the fetch goes on")
+    func cancelledWaitReturnsAndFetchGoesOn() async {
+        let fetcher = ManualFetcher()
+        let viewModel = createViewModel(storedHistory: nil, fetcher: fetcher)
+        let firstLoad = Task { await viewModel.load() }
+        await fetcher.waitForFirstCall()
+
+        let cancelledLoad = Task { await viewModel.load() }
+        cancelledLoad.cancel()
+        await cancelledLoad.value
+
+        #expect(viewModel.isLoading)
+        await fetcher.resolve(.success([close(2026, 10, 15, 100)]))
+        await firstLoad.value
+        #expect(viewModel.points.map(\.close) == [100])
+    }
+
+    @Test("a load right after a failed fetch fetches again")
+    func loadAfterFailureFetchesAgain() async {
+        let fetcher = ManualFetcher()
+        let viewModel = createViewModel(storedHistory: nil, fetcher: fetcher)
+        let firstLoad = Task { await viewModel.load() }
+        await fetcher.waitForFirstCall()
+        await fetcher.resolve(.failure(.network))
+        await firstLoad.value
+
+        let secondLoad = Task { await viewModel.load() }
+        await fetcher.waitForFirstCall()
+        await fetcher.resolve(.success([close(2026, 10, 15, 100)]))
+        await secondLoad.value
+
+        #expect(await fetcher.callCount == 2)
+        #expect(viewModel.points.map(\.close) == [100])
+    }
+
+    @Test("a load sets isLoading before its first wait")
+    func loadSetsIsLoadingAtOnce() async {
+        let fetcher = ManualFetcher()
+        let viewModel = createViewModel(storedHistory: nil, fetcher: fetcher)
+
+        let load = Task { await viewModel.load() }
+        await Task.yield()
+
+        #expect(viewModel.isLoading)
+        await fetcher.waitForFirstCall()
+        await fetcher.resolve(.success([]))
+        await load.value
     }
 }
 

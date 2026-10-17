@@ -2,7 +2,7 @@ import Foundation
 
 /// One step to the previous or the next page: on the chart page to the
 /// chart of a neighbor row, on the main page to a neighbor group.
-/// "Vorheriger", "Nächster" and a sideways swipe each ask for one.
+/// "Vorherige", "Nächste" and a sideways swipe each ask for one.
 public enum PageStep: Sendable, Equatable {
     case previous
     case next

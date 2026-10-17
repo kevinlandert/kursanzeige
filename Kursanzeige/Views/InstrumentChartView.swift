@@ -2,50 +2,37 @@ import SwiftUI
 import Charts
 import KursanzeigeKit
 
-/// Full-screen overlay opened by tapping a table row: the instrument's
-/// close price over a chosen range, as a thick yellow line with the
-/// highest and lowest value labeled directly on the right-hand axis --
-/// large and bold, since this app is for someone with low vision -- plus
-/// the current value in the same color as the line (label only, no line of
-/// its own). Near the high or low, the current value label moves away.
-/// Below the chart, a bold green/red line shows the percent change across
-/// the whole shown range. The chart takes at most 45 % of the screen, so
-/// the title keeps its full size. It shows the price history of the last
-/// "Aktualisieren", so it opens without a network. The currency of a
-/// stock, an ETF or a future shows next to the title. "Vorlesen" reads
-/// the chart aloud. "Vorheriger" and "Nächster" at the bottom open the
-/// neighbor rows.
+/// The chart of one instrument, on the chart page: the instrument's close
+/// price over a chosen range, as a thick yellow line with the highest and
+/// lowest value labeled directly on the right-hand axis -- large and bold,
+/// since this app is for someone with low vision -- plus the current value
+/// in the same color as the line (label only, no line of its own). Near
+/// the high or low, the current value label moves away. A bold green/red
+/// line shows the percent change across the whole shown range. It shows
+/// the price history of the last "Aktualisieren", so it opens without a
+/// network. The currency of a stock, an ETF or a future shows next to the
+/// title.
+///
+/// In portrait the chart is below the title and takes at most 45 % of the
+/// height, so the title keeps its full size. In landscape the screen is
+/// low, so the title, the range buttons and the change are at the left of
+/// the chart.
 struct InstrumentChartView: View {
     let viewModel: InstrumentChartViewModel
-    let onPrevious: (() -> Void)?
-    let onNext: (() -> Void)?
-    let isReadingAloud: Bool
-    let onReadAloud: () -> Void
-    let onClose: () -> Void
+    let onSelectRange: (ChartRange) -> Void
 
     private var group: MarketGroup { viewModel.instrument.group }
 
     var body: some View {
         GeometryReader { geometry in
-            VStack(spacing: 16) {
-                header
-                rangeSelector
-                content
-                    // A finite maximum: Swift Charts does not fill an
-                    // open `maxHeight: .infinity`, and leaves a blank gap
-                    // below the plot. Below the maximum, the chart gives
-                    // way, so the buttons stay on a smaller screen, e.g.
-                    // with display zoom.
-                    .frame(minHeight: Theme.chartMinimumHeight, maxHeight: geometry.size.height * Theme.chartHeightShare)
-                rangeChangeLabel
-                // Gets only the space that the chart does not use.
-                Spacer(minLength: 0)
-                    .layoutPriority(-1)
-                ReadAloudButton(isOn: isReadingAloud, identifier: "readAloud", action: onReadAloud)
-                ChartNavigationButtons(onPrevious: onPrevious, onNext: onNext)
+            Group {
+                if geometry.size.width > geometry.size.height {
+                    landscapeLayout(size: geometry.size)
+                } else {
+                    portraitLayout(height: geometry.size.height)
+                }  
             }
             .padding(Theme.pageMargin)
-            .padding(.bottom, Theme.chartPageBottomGap)
             .background(Theme.background)
         }
         // Keyed by the instrument, so a new instrument also gets its fetch
@@ -53,43 +40,90 @@ struct InstrumentChartView: View {
         .task(id: viewModel.id) { await viewModel.load() }
     }
 
+    private func portraitLayout(height: CGFloat) -> some View {
+        VStack(spacing: 16) {
+            header
+            makeRangeSelector(columnCount: ChartRange.allCases.count)
+            content
+                // A finite maximum: Swift Charts does not fill an
+                // open `maxHeight: .infinity`, and leaves a blank gap
+                // below the plot. Below the maximum, the chart gives
+                // way, so the bar stays on a smaller screen, e.g.
+                // with display zoom.
+                .frame(minHeight: Theme.chartMinimumHeight, maxHeight: height * Theme.chartHeightShare)
+            rangeChangeLabel
+            // Gets only the space that the chart does not use.
+            Spacer(minLength: 0)
+                .layoutPriority(-1)
+        }
+    }
+
+    /// The left column has a fixed share of the width, so the chart
+    /// cannot push the title and the buttons away. The range buttons are
+    /// in two rows, so their names keep their size.
+    private func landscapeLayout(size: CGSize) -> some View {
+        HStack(alignment: .top, spacing: Theme.chartLandscapeColumnGap) {
+            VStack(alignment: .leading, spacing: 16) {
+                stackedHeader
+                makeRangeSelector(columnCount: 2)
+                rangeChangeLabel
+                Spacer(minLength: 0)
+            }
+            .frame(width: size.width * Theme.chartLandscapeInfoShare)
+            content
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+    }
+
+    /// The currency follows the name. In the narrow landscape column it
+    /// is below the name, so a long name keeps more of its size.
     private var header: some View {
         HStack(alignment: .firstTextBaseline) {
-            Text(viewModel.instrument.name)
-                .font(Theme.chartTitleFont)
-                .foregroundStyle(Theme.text)
-                .lineLimit(1)
-                .minimumScaleFactor(0.4)
-                .accessibilityIdentifier("chartTitle")
+            title
             // The full code always shows: a long name gets smaller first.
-            if let currency = viewModel.currency {
-                Text(currency)
-                    .font(Theme.chartCurrencyFont)
-                    .foregroundStyle(Theme.mutedText)
-                    .fixedSize()
-                    .padding(.leading, Theme.chartCurrencyGap)
-            }
-            Spacer()
-            Button(action: onClose) {
-                Image(systemName: "xmark")
-                    .font(.system(size: Theme.chartCloseButtonSize * 0.5, weight: .bold))
-                    .frame(width: Theme.chartCloseButtonSize, height: Theme.chartCloseButtonSize)
-                    .foregroundStyle(Theme.text)
-            }
-            .accessibilityLabel("Schliessen")
+            currencyLabel
+                .padding(.leading, Theme.chartCurrencyGap)
+            Spacer(minLength: 0)
+        }
+    }
+
+    private var stackedHeader: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            title
+            currencyLabel
+        }
+    }
+
+    private var title: some View {
+        Text(viewModel.instrument.name)
+            .font(Theme.chartTitleFont)
+            .foregroundStyle(Theme.text)
+            .lineLimit(1)
+            .minimumScaleFactor(0.4)
+            .accessibilityIdentifier("chartTitle")
+    }
+
+    @ViewBuilder
+    private var currencyLabel: some View {
+        if let currency = viewModel.currency {
+            Text(currency)
+                .font(Theme.chartCurrencyFont)
+                .foregroundStyle(Theme.mutedText)
+                .fixedSize()
         }
     }
 
     /// The four range buttons. Picking one cuts that span from the
     /// stored history at once (see `InstrumentChartViewModel.select`).
-    private var rangeSelector: some View {
-        HStack(spacing: 10) {
+    private func makeRangeSelector(columnCount: Int) -> some View {
+        let columns = Array(repeating: GridItem(.flexible(), spacing: 10), count: columnCount)
+        return LazyVGrid(columns: columns, spacing: 10) {
             ForEach(ChartRange.allCases, id: \.self) { range in
                 let isActive = range == viewModel.range
                 Button {
-                    viewModel.select(range)
+                    onSelectRange(range)
                 } label: {
-                    Text(Formatting.chartRangeLabel(range))
+                    Text(range.displayName)
                         .font(Theme.groupButtonFont)
                         .lineLimit(1)
                         .minimumScaleFactor(0.7)
@@ -133,6 +167,8 @@ struct InstrumentChartView: View {
             Text(Formatting.percent(percent))
                 .font(Theme.chartRangeChangeFont)
                 .foregroundStyle(Formatting.color(for: percent))
+                .lineLimit(1)
+                .minimumScaleFactor(0.5)
                 .accessibilityLabel("Veränderung über den gewählten Zeitraum: \(Formatting.percent(percent))")
         }
     }
@@ -243,10 +279,6 @@ struct InstrumentChartView: View {
 #Preview {
     InstrumentChartView(
         viewModel: MainViewModel().makeChartViewModel(for: Instrument(symbol: "NESN.SW", name: "Nestlé", group: .switzerland)),
-        onPrevious: nil,
-        onNext: {},
-        isReadingAloud: false,
-        onReadAloud: {},
-        onClose: {}
+        onSelectRange: { _ in }
     )
 }

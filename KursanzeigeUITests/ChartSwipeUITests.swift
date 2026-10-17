@@ -9,6 +9,7 @@ final class ChartSwipeUITests: XCTestCase {
     override func setUp() async throws {
         continueAfterFailure = false
         app = XCUIApplication()
+        app.startCursorsOnFirstRow()
         app.launch()
     }
 

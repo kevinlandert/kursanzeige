@@ -94,6 +94,39 @@ struct PaletteTests {
         #expect(palette.action.contrastRatio(to: palette.background) >= Self.minimumButtonContrast)
     }
 
+    /// The cursor row is yellow in light and in dark, so its text colors
+    /// are dark in both palettes.
+    @Test("text, grey text, plus and minus colors are clear on the yellow cursor row", arguments: [Palette.light, Palette.dark])
+    func valueColorsAreClearOnCursorRow(palette: Palette) {
+        for text in [palette.cursorText, palette.cursorMutedText, palette.cursorPositive, palette.cursorNegative] {
+            #expect(text.contrastRatio(to: palette.cursor) >= Self.minimumTextContrast)
+        }
+    }
+
+    @Test("the number of the cursor row is clear in its black badge", arguments: [Palette.light, Palette.dark])
+    func cursorBadgeNumberIsClear(palette: Palette) {
+        #expect(palette.cursor.contrastRatio(to: palette.cursorText) >= Self.minimumTextContrast)
+    }
+
+    @Test("the border of the cursor row stands out from the page", arguments: [Palette.light, Palette.dark])
+    func cursorBorderStandsOutFromPage(palette: Palette) {
+        #expect(palette.cursorBorder.contrastRatio(to: palette.background) >= Self.minimumButtonContrast)
+    }
+
+    @Test("the text of each bottom button and of the status line is clear on its fill", arguments: [Palette.light, Palette.dark])
+    func bottomBarTextIsClearOnFill(palette: Palette) {
+        #expect(palette.primaryText.contrastRatio(to: palette.primary) >= Self.minimumTextContrast)
+        #expect(palette.invertedText.contrastRatio(to: palette.invertedFill) >= Self.minimumTextContrast)
+        #expect(palette.text.contrastRatio(to: palette.neutralFill) >= Self.minimumTextContrast)
+        #expect(palette.text.contrastRatio(to: palette.background) >= Self.minimumTextContrast)
+    }
+
+    @Test("the outline of a bottom button and a blue button stand out from the page", arguments: [Palette.light, Palette.dark])
+    func bottomButtonsStandOutFromPage(palette: Palette) {
+        #expect(palette.outline.contrastRatio(to: palette.background) >= Self.minimumButtonContrast)
+        #expect(palette.primary.contrastRatio(to: palette.background) >= Self.minimumButtonContrast)
+    }
+
     @Test("the light palette keeps the plus and minus colors of the first version")
     func lightPaletteKeepsKnownColors() {
         #expect(Palette.light.positive == RGBColor(hex: 0x006400))

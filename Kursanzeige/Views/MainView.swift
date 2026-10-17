@@ -1,32 +1,49 @@
 import SwiftUI
 import KursanzeigeKit
 
-/// The whole app is this one screen: a status/refresh bar, the group
-/// selector, and the table. Opens showing whatever was cached from the
-/// last successful refresh -- "Aktualisieren" is a deliberate, visible
-/// action rather than something that happens silently on launch.
-/// A sideways swipe goes to the neighbor group. "Vorlesen" at the bottom
-/// reads the table.
+/// The main page: a status/refresh bar, the group selector, the table and
+/// the bottom bar. Opens showing whatever was cached from the last
+/// successful refresh -- "Aktualisieren" is a deliberate, visible action
+/// rather than something that happens silently on launch. A sideways
+/// swipe goes to the neighbor group. The bottom bar moves the yellow
+/// cursor and reads the rows aloud. A tap on a row, or "Öffnen", opens the
+/// chart page of that row.
 struct MainView: View {
-    @State private var viewModel = MainViewModel()
+    let appModel: AppModel
     @State private var showingSettings = false
-    /// Set by a row tap. Created once per tap, so the chart's history file
-    /// is read once, not on every re-render of this view.
-    @State private var chartViewModel: InstrumentChartViewModel?
-    /// One voice for the full app life. See `SynthesizerSpeaker`.
-    @State private var speaker: SynthesizerSpeaker
-    /// "Vorlesen" of the table. It uses the same voice as the chart page.
-    @State private var tableReader: PageReader
     /// Stored, so the choice stays after the app closes.
     @AppStorage(Appearance.storageKey) private var appearance = Appearance.light
 
-    init() {
-        let speaker = SynthesizerSpeaker()
-        _speaker = State(initialValue: speaker)
-        _tableReader = State(initialValue: PageReader(speaker: speaker))
-    }
+    private var viewModel: MainViewModel { appModel.viewModel }
 
     var body: some View {
+        VStack(spacing: 0) {
+            pageContent
+                .padding(.horizontal, Theme.pageMargin)
+                .padding(.vertical, 16)
+                // Together with the table scroll: a swipe up or down still scrolls.
+                .simultaneousGesture(PageSwipe.gesture(onStep: showNeighborGroup))
+            BottomBar(
+                reader: appModel.table.reader,
+                page: "table",
+                previousHint: ControlTexts.previousHint,
+                nextHint: ControlTexts.nextHint,
+                lastButton: openButton
+            )
+        }
+        .background(Theme.background)
+        // A new group, a new sort or new prices give the table new rows.
+        .onChange(of: shownTable) { appModel.showRows() }
+        .preferredColorScheme(appearance == .dark ? .dark : .light)
+        .fullScreenCover(isPresented: $showingSettings, onDismiss: appModel.closeSettings) {
+            SettingsView(viewModel: viewModel)
+        }
+        .fullScreenCover(item: chartPageBinding) { page in
+            ChartPage(model: page, onClose: appModel.closeChart)
+        }
+    }
+
+    private var pageContent: some View {
         VStack(spacing: 16) {
             topBar
 
@@ -36,43 +53,43 @@ struct MainView: View {
 
             PerformanceTableView(
                 rows: viewModel.displayedRows,
+                cursorRowId: appModel.table.reader.cursorRowId,
                 sortColumn: viewModel.sortColumn,
                 sortAscending: viewModel.sortAscending,
                 oneYearMode: viewModel.oneYearMode,
                 rangeMode: viewModel.rangeMode,
                 onSort: { viewModel.toggleSort($0) },
-                onSelect: { row in
-                    tableReader.turnOff()
-                    chartViewModel = viewModel.makeChartViewModel(for: row.instrument)
-                }
+                onSelect: { row in appModel.openChart(for: row.instrument) }
             )
             .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius))
             .overlay(RoundedRectangle(cornerRadius: Theme.cornerRadius).stroke(Theme.separator))
-
-            ReadAloudButton(isOn: tableReader.isOn, identifier: "tableReadAloud") {
-                tableReader.toggle(shownText: viewModel.spokenTable)
-            }
-        }
-        .padding(.horizontal, Theme.pageMargin)
-        .padding(.vertical, 16)
-        .background(Theme.background)
-        // Together with the table scroll: a swipe up or down still scrolls.
-        .simultaneousGesture(PageSwipe.gesture(onStep: showNeighborGroup))
-        // Not on each new price: during a refresh, the voice would start
-        // again after each fetch.
-        .onChange(of: tableOrder) { tableReader.readIfOn(viewModel.spokenTable) }
-        .preferredColorScheme(appearance == .dark ? .dark : .light)
-        .fullScreenCover(isPresented: $showingSettings) {
-            SettingsView(viewModel: viewModel)
-        }
-        .fullScreenCover(item: $chartViewModel) { chart in
-            ChartPager(firstChart: chart, mainViewModel: viewModel, speaker: speaker) { chartViewModel = nil }
         }
     }
 
-    /// A new group or a new sort gives a new table text.
-    private var tableOrder: TableOrder {
-        TableOrder(group: viewModel.selectedGroup, sortColumn: viewModel.sortColumn, sortAscending: viewModel.sortAscending)
+    /// The group and its rows together: two groups without rows also
+    /// count as a change.
+    private var shownTable: ShownTable {
+        ShownTable(group: viewModel.selectedGroup, rows: viewModel.displayedRows)
+    }
+
+    private var openButton: BottomButtonContent {
+        BottomButtonContent(
+            title: ControlTexts.open, symbolName: "chart.xyaxis.line", placement: .trailing,
+            look: .inverted, hint: ControlTexts.openHint, identifier: "table.openButton"
+        ) {
+            guard let instrument = appModel.table.openCursorRow() else { return }
+            appModel.openChart(for: instrument)
+        }
+    }
+
+    /// A close from the page itself sets the binding to nil.
+    private var chartPageBinding: Binding<ChartPageModel?> {
+        Binding(
+            get: { appModel.chartPage },
+            set: { newPage in
+                if newPage == nil { appModel.closeChart() }
+            }
+        )
     }
 
     /// Does nothing at the first or the last group.
@@ -108,7 +125,7 @@ struct MainView: View {
                 appearance = appearance.toggled
             }
             SettingsButton {
-                tableReader.turnOff()
+                appModel.openSettings()
                 showingSettings = true
             }
             .padding(.leading, Theme.topBarButtonGap)
@@ -121,13 +138,12 @@ struct MainView: View {
     }
 }
 
-/// The shown group and its sort, without the prices.
-private struct TableOrder: Equatable {
+/// The shown group with its rows, in the order of the table.
+private struct ShownTable: Equatable {
     let group: MarketGroup
-    let sortColumn: SortColumn
-    let sortAscending: Bool
+    let rows: [InstrumentRow]
 }
 
 #Preview {
-    MainView()
+    MainView(appModel: AppModel())
 }

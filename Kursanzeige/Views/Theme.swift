@@ -27,6 +27,22 @@ enum Theme {
     static let buttonText = Color.palette(\.buttonText)
     static let buttonBorder = Color.palette(\.buttonBorder)
     static let buttonBorderWidth: CGFloat = 2
+    /// The yellow cursor row, its text colors and its thick border. See
+    /// `Palette.cursor`.
+    static let cursor = Color.palette(\.cursor)
+    static let cursorText = Color.palette(\.cursorText)
+    static let cursorMutedText = Color.palette(\.cursorMutedText)
+    static let cursorPositive = Color.palette(\.cursorPositive)
+    static let cursorNegative = Color.palette(\.cursorNegative)
+    static let cursorBorder = Color.palette(\.cursorBorder)
+    static let cursorBorderWidth: CGFloat = 4
+    /// The three looks of the bottom buttons. See `ControlLook`.
+    static let primary = Color.palette(\.primary)
+    static let primaryText = Color.palette(\.primaryText)
+    static let neutralFill = Color.palette(\.neutralFill)
+    static let invertedFill = Color.palette(\.invertedFill)
+    static let invertedText = Color.palette(\.invertedText)
+    static let outline = Color.palette(\.outline)
     // `.separator` is translucent and easy to miss. `.opaqueSeparator` is
     // the solid system line, and it also changes with dark mode.
     static let separator = Color(uiColor: .opaqueSeparator)
@@ -77,7 +93,6 @@ enum Theme {
     /// the single biggest text on this screen, since it's the one-number
     /// summary of everything else on it.
     static let chartRangeChangeFont = font(size: 84, weight: .heavy).monospacedDigit()
-    static let chartCloseButtonSize: CGFloat = 100
     /// Extra gap between the chart's right-hand axis labels and the plot's
     /// own border, beyond Swift Charts' default spacing -- otherwise the
     /// high/low/current numbers sit almost flush against the box edge.
@@ -96,19 +111,41 @@ enum Theme {
     /// low label, as a part of the high-low range. A label nearer to them
     /// moves away. The labels are large, so they need a wide gap.
     static let chartCurrentPriceLabelGapShare: Double = 0.16
-    /// "Vorheriger" and "Nächster" below the chart.
-    static let chartNavigationFont = font(size: 40)
     /// The largest part of the chart page height that the chart takes.
     /// More makes the title shrink, because the page has no more space.
     static let chartHeightShare: CGFloat = 0.45
+    /// In landscape the title, the range buttons and the change are in a
+    /// column at the left of the chart, with this part of the width.
+    static let chartLandscapeInfoShare: CGFloat = 0.38
+    static let chartLandscapeColumnGap: CGFloat = 24
     /// The chart never gets lower, also on a small screen.
     static let chartMinimumHeight: CGFloat = 250
-    /// Keeps "Vorheriger" and "Nächster" clear of the round screen corners.
-    static let chartPageBottomGap: CGFloat = 10
-    /// The "Vorlesen" button above "Vorheriger" and "Nächster".
-    static let readAloudButtonWidth: CGFloat = 220
-    static let readAloudButtonHeight: CGFloat = 100
-    static let readAloudIconSize: CGFloat = 56
+    /// The bar at the bottom of the table and the chart page: a 3 pt rule
+    /// over it, the status line, and four buttons, as in Schlagzeilen.
+    static let bottomBarRuleWidth: CGFloat = 3
+    static let bottomBarSpacing: CGFloat = 12
+    static let bottomBarHorizontalPadding: CGFloat = 24
+    static let bottomBarTopPadding: CGFloat = 12
+    static let bottomBarBottomPadding: CGFloat = 20
+    static let bottomButtonSpacing: CGFloat = 16
+    static let bottomButtonHeight: CGFloat = 96
+    static let bottomButtonCornerRadius: CGFloat = 20
+    static let bottomButtonBorderWidth: CGFloat = 3
+    static let bottomButtonFont = font(size: 28)
+    static let bottomButtonSymbolFont = Font.system(size: 28, weight: .bold)
+    static let bottomButtonSymbolSpacing: CGFloat = 12
+    static let bottomButtonHorizontalPadding: CGFloat = 12
+    static let statusLineFont = font(size: 24)
+    static let statusLineCornerRadius: CGFloat = 12
+    static let statusLineHorizontalPadding: CGFloat = 16
+    static let statusLineVerticalPadding: CGFloat = 10
+    /// The round number badge at the start of each row. The cursor row
+    /// has a black badge with a yellow number.
+    static let numberBadgeSize: CGFloat = 52
+    static let numberBadgeFont = font(size: 24).monospacedDigit()
+    static let numberBadgeBorderWidth: CGFloat = 3
+    /// The badge and a gap to the name.
+    static let numberColumnWidth: CGFloat = numberBadgeSize + 14
     /// Grey text on a grey button: it shows "not available" at once. The
     /// grey has a tested contrast, so the text stays clear.
     static let disabledButtonForeground = mutedText

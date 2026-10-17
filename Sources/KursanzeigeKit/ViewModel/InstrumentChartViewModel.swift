@@ -45,6 +45,8 @@ public final class InstrumentChartViewModel: Identifiable {
     public nonisolated var id: String { instrument.symbol }
 
     private var history: PriceHistory?
+    /// The fetch that runs. A second `load()` waits for it.
+    private var loadTask: Task<Void, Never>?
     private let fetcher: PriceFetching
     private let calendar: Calendar
     private let now: () -> Date
@@ -79,14 +81,14 @@ public final class InstrumentChartViewModel: Identifiable {
     }
 
     /// The text that "Vorlesen" reads for this chart, e.g. "Nestlé, 1 Jahr,
-    /// 77,96 Franken, plus 3,2 Prozent". `rangeName` is the label of the range
-    /// button, so the voice and the screen use the same words. `nil`
+    /// 77,96 Franken, plus 3,2 Prozent". The range name is the label of the
+    /// range button, so the voice and the screen use the same words. `nil`
     /// without closes.
-    public func spokenSummary(rangeName: String) -> String? {
+    public func spokenSummary() -> String? {
         guard let lastClose = points.last?.close else { return nil }
         return ChartSpeech.text(
             name: instrument.name,
-            rangeName: rangeName,
+            rangeName: range.displayName,
             price: lastClose,
             group: instrument.group,
             unit: history?.unit,
@@ -94,13 +96,28 @@ public final class InstrumentChartViewModel: Identifiable {
         )
     }
 
-    /// Fetches the history only when none is stored. Ignored while a fetch
-    /// is in flight, so a second call cannot start a parallel request.
+    /// Fetches the history only when none is stored. A second call during
+    /// a fetch waits for that fetch and does not start a parallel request.
+    /// Thus the voice can wait for the history that the view loads. A
+    /// cancelled caller stops its wait at once, and the fetch goes on.
     public func load() async {
-        guard history == nil, !isLoading else { return }
-        isLoading = true
-        errorMessage = nil
+        if loadTask == nil {
+            guard history == nil else { return }
+            isLoading = true
+            errorMessage = nil
+            loadTask = Task { await fetchHistory() }
+        }
+        guard let loadTask else { return }
+        await CancellableWait.wait(for: loadTask)
+    }
 
+    /// Ends the fetch in its own task, so a new `load()` after a failure
+    /// fetches again at once.
+    private func fetchHistory() async {
+        defer {
+            isLoading = false
+            loadTask = nil
+        }
         do {
             let fetchedCloses = try await fetcher.fetchCloses(for: instrument.symbol)
             let fetched = PriceHistory(closes: fetchedCloses.closes, unit: fetchedCloses.unit, fetchedAt: now())
@@ -112,7 +129,6 @@ public final class InstrumentChartViewModel: Identifiable {
         } catch {
             errorMessage = "Unbekannter Fehler"
         }
-        isLoading = false
     }
 
     private func makePoints() -> [ClosePoint] {

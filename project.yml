@@ -25,8 +25,21 @@ targets:
       path: Kursanzeige/Info.plist
       properties:
         UILaunchScreen: {}
-        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
-        UISupportedInterfaceOrientations~ipad: [UIInterfaceOrientationPortrait]
+        # Portrait and landscape: the table, the chart page and the bottom
+        # bar have a layout for each.
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        # Vorlesen goes on when the iPad locks, and the lock screen and the
+        # AirPods control it.
+        UIBackgroundModes: [audio]
         CFBundleDisplayName: Kursanzeige
         # Atkinson Hyperlegible Next, see Theme.font. OFL.txt next to it is
         # its license.
@@ -36,11 +49,8 @@ targets:
         # The app uses only HTTPS, which is exempt. Without this key, each
         # TestFlight build waits for a manual export compliance answer.
         ITSAppUsesNonExemptEncryption: false
-        # Portrait-only is a deliberate design choice (large, fixed table
-        # layout for low vision) -- rather than adding landscape support to
-        # satisfy iPad multitasking, this opts the app out of Split
-        # View/Slide Over entirely, which App Store Connect requires for a
-        # single-orientation iPad app.
+        # The large table needs the full width of the screen, so the app
+        # does not take part in Split View and Slide Over.
         UIRequiresFullScreen: true
     settings:
       base:

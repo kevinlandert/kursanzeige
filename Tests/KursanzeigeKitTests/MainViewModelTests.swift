@@ -116,16 +116,6 @@ struct MainViewModelTests {
         #expect(viewModel.displayedRows.map(\.instrument.name) == ["Novartis", "Nestlé"])
     }
 
-    @Test("the spoken table gives the selected group in the order of the table")
-    func spokenTableFollowsTableOrder() {
-        let viewModel = MainViewModel(instruments: testInstruments, fetcher: ScriptedFetcher(scripts: [:]), cache: InMemoryCache())
-        viewModel.select(.switzerland)
-        viewModel.toggleSort(.name)
-        viewModel.toggleSort(.name)
-
-        #expect(viewModel.spokenTable == "Schweiz. Novartis, kein Kurs. Nestlé, kein Kurs.")
-    }
-
     @Test func togglingNewColumnResetsToAscending() {
         let viewModel = MainViewModel(instruments: testInstruments, fetcher: ScriptedFetcher(scripts: [:]), cache: InMemoryCache())
         viewModel.toggleSort(.name)
@@ -260,40 +250,6 @@ struct MainViewModelTests {
         let chart = viewModel.makeChartViewModel(for: nestle, range: .fiveYears)
 
         #expect(chart.range == .fiveYears)
-    }
-
-    @Test func neighborsFollowTheOrderOfTheTable() {
-        let viewModel = MainViewModel(instruments: testInstruments, fetcher: ScriptedFetcher(scripts: [:]), cache: InMemoryCache())
-        viewModel.select(.switzerland)
-
-        #expect(viewModel.instrument(after: nestle) == novartis)
-        #expect(viewModel.instrument(before: novartis) == nestle)
-    }
-
-    @Test func firstRowHasNoPreviousAndLastRowHasNoNext() {
-        let viewModel = MainViewModel(instruments: testInstruments, fetcher: ScriptedFetcher(scripts: [:]), cache: InMemoryCache())
-        viewModel.select(.switzerland)
-
-        #expect(viewModel.instrument(before: nestle) == nil)
-        #expect(viewModel.instrument(after: novartis) == nil)
-    }
-
-    @Test func neighborsFollowAReversedSort() {
-        let viewModel = MainViewModel(instruments: testInstruments, fetcher: ScriptedFetcher(scripts: [:]), cache: InMemoryCache())
-        viewModel.select(.switzerland)
-        viewModel.toggleSort(.name)
-        viewModel.toggleSort(.name)
-
-        #expect(viewModel.instrument(after: novartis) == nestle)
-        #expect(viewModel.instrument(before: nestle) == novartis)
-    }
-
-    @Test func instrumentOutsideTheSelectedGroupHasNoNeighbors() {
-        let viewModel = MainViewModel(instruments: testInstruments, fetcher: ScriptedFetcher(scripts: [:]), cache: InMemoryCache())
-        viewModel.select(.switzerland)
-
-        #expect(viewModel.instrument(after: chf) == nil)
-        #expect(viewModel.instrument(before: chf) == nil)
     }
 
     @Test func historyFetchedByTheChartIsStoredForTheNextOpen() async {

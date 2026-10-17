@@ -30,23 +30,28 @@ enum Formatting {
     }
 
     static func color(for value: Double?) -> Color {
-        guard let value else { return Theme.neutral }
-        if value > 0 { return Theme.positive }
-        if value < 0 { return Theme.negative }
-        return Theme.neutral
+        tone(for: value).color
     }
 
-    /// Color for the "Tag" cell specifically: greyed out whenever the most
+    /// Plus, minus or neutral by the sign of the value.
+    static func tone(for value: Double?) -> ValueTone {
+        guard let value else { return .neutral }
+        if value > 0 { return .positive }
+        if value < 0 { return .negative }
+        return .neutral
+    }
+
+    /// The tone of the "Tag" cell specifically: greyed out whenever the most
     /// recent close isn't from today in Switzerland -- market not open yet,
     /// a weekend, a holiday -- so a same-looking number is never mistaken
     /// for a live intraday move. Different instruments in the same table
     /// can disagree (e.g. DAX open while the S&P 500 hasn't started yet),
     /// so this is judged per row from that row's own `asOf` date, not a
     /// single "is the table stale" flag.
-    static func dayChangeColor(percent: Double?, asOf: Date?) -> Color {
-        guard percent != nil else { return Theme.neutral }
-        guard let asOf, zurichCalendar.isDateInToday(asOf) else { return Theme.mutedText }
-        return color(for: percent)
+    static func dayChangeTone(percent: Double?, asOf: Date?) -> ValueTone {
+        guard percent != nil else { return .neutral }
+        guard let asOf, zurichCalendar.isDateInToday(asOf) else { return .muted }
+        return tone(for: percent)
     }
 
     /// "Stand: 10.09.2026, 14:32" -- shown so it's obvious the data is a
@@ -56,13 +61,32 @@ enum Formatting {
         return "Stand: \(date.formatted(.dateTime.locale(swissLocale).day(.twoDigits).month(.twoDigits).year().hour().minute()))"
     }
 
-    /// German label for a chart range button.
-    static func chartRangeLabel(_ range: ChartRange) -> String {
-        switch range {
-        case .oneMonth: return "1 Monat"
-        case .threeMonths: return "3 Monate"
-        case .oneYear: return "1 Jahr"
-        case .fiveYears: return "5 Jahre"
+}
+
+/// The color role of a value in the table. A row picks the colors of its
+/// background: the yellow cursor row needs darker colors in dark mode.
+enum ValueTone {
+    case positive
+    case negative
+    case neutral
+    /// A "Tag" value that is not from today.
+    case muted
+
+    var color: Color {
+        switch self {
+        case .positive: Theme.positive
+        case .negative: Theme.negative
+        case .neutral: Theme.neutral
+        case .muted: Theme.mutedText
+        }
+    }
+
+    var cursorColor: Color {
+        switch self {
+        case .positive: Theme.cursorPositive
+        case .negative: Theme.cursorNegative
+        case .neutral: Theme.cursorText
+        case .muted: Theme.cursorMutedText
         }
     }
 }

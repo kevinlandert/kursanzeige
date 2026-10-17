@@ -1,13 +1,12 @@
-/// The text read aloud for the table on the main page, e.g. "Schweiz.
-/// Nestlé, 77,96 Franken, plus 0,5 Prozent. …". It gives the name, the
-/// price with its unit and the day change. The table shows no unit, but
-/// the voice tells it, because a number alone is not clear. A full stop after each row gives the voice a pause.
+/// The text read aloud for a table row, e.g. „Nummer drei. Nestlé, 77,96
+/// Franken, plus 0,5 Prozent.“ It gives the number of the row, the name,
+/// the price with its unit and the day change. The table shows no unit,
+/// but the voice tells it, because a number alone is not clear.
 /// `SpokenNumber` gives the number format.
 enum TableSpeech {
-    /// The group name comes first: after a swipe, the person hears which
-    /// group the table shows.
-    static func text(group: MarketGroup, rows: [InstrumentRow]) -> String {
-        ([group.displayName] + rows.map(rowText)).map { "\($0)." }.joined(separator: " ")
+    /// - Parameter number: the place of the row in the table, from 1.
+    static func text(_ row: InstrumentRow, number: Int) -> String {
+        ListTexts.numbered("\(rowText(row)).", number: number)
     }
 
     private static func rowText(_ row: InstrumentRow) -> String {
