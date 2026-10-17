@@ -15,14 +15,13 @@ final class RefreshButtonUITests: XCTestCase {
     }
 
     func testTopBarButtonsKeepSizeAndPlaceDuringRefresh() {
-        let appearanceButton = app.buttons["appearance"]
-        let settingsButton = app.buttons["Einstellungen öffnen"]
-        let framesBefore = [appearanceButton.frame, settingsButton.frame, refreshButton.frame]
+        let settingsButton = app.buttons["settingsButton"]
+        let framesBefore = [settingsButton.frame, refreshButton.frame]
 
         refreshButton.tap()
         waitForLabel(beginningWith: "Lädt", timeout: 2)
 
-        XCTAssertEqual([appearanceButton.frame, settingsButton.frame, refreshButton.frame], framesBefore)
+        XCTAssertEqual([settingsButton.frame, refreshButton.frame], framesBefore)
         waitForLabel(beginningWith: "Aktualisieren", timeout: 120)
     }
 

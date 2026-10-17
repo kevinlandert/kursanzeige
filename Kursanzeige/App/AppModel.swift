@@ -1,3 +1,4 @@
+import Foundation
 import KursanzeigeKit
 import Observation
 
@@ -14,6 +15,11 @@ final class AppModel {
     let table: TableListModel
     /// The open chart page. Nil while the table shows.
     private(set) var chartPage: ChartPageModel?
+    /// True while „Probe hören“ of the settings plays.
+    private(set) var isPlayingSample = false
+    /// Counts the samples, so a late end of a stopped sample does not
+    /// reset the state of the next one.
+    @ObservationIgnored private var sampleCount = 0
 
     @ObservationIgnored private let speaker: SynthesizerSpeaker
     @ObservationIgnored private let voiceOver: VoiceOverAnnouncer
@@ -25,9 +31,13 @@ final class AppModel {
 
     init() {
         let viewModel = MainViewModel()
-        let speaker = SynthesizerSpeaker()
+        let speaker = SynthesizerSpeaker { Self.storedSpeechRate }
         let voiceOver = VoiceOverAnnouncer()
-        let table = TableListModel(group: viewModel.selectedGroup, rows: viewModel.displayedRows, speaker: speaker, voiceOver: voiceOver)
+        let table = TableListModel(
+            group: viewModel.selectedGroup, rows: viewModel.displayedRows,
+            settings: Self.makeSpeechSettings(viewModel: viewModel, columns: Self.storedSpokenColumns),
+            speaker: speaker, voiceOver: voiceOver
+        )
         let router = RemoteCommandRouter(tableReader: table.reader)
         self.viewModel = viewModel
         self.speaker = speaker
@@ -39,9 +49,34 @@ final class AppModel {
         audioSessionObserver = AudioSessionObserver { [weak self] in self?.stopAllSpeech() }
     }
 
-    /// Gives the table the rows that the view model shows now.
-    func showRows() {
-        table.show(group: viewModel.selectedGroup, rows: viewModel.displayedRows)
+    /// Gives the table the rows that the view model shows now, with the
+    /// columns that the voice reads.
+    func showRows(spokenColumns: SpokenColumns) {
+        let settings = Self.makeSpeechSettings(viewModel: viewModel, columns: spokenColumns)
+        table.show(group: viewModel.selectedGroup, rows: viewModel.displayedRows, settings: settings)
+    }
+
+    /// „Probe hören“: reads the cursor row of the table with the chosen
+    /// columns and tempo. A second press stops it.
+    func toggleSample() {
+        guard !isPlayingSample else { return stopSample() }
+        isPlayingSample = true
+        sampleCount += 1
+        let sampleIndex = sampleCount
+        let text = table.sampleText
+        Task {
+            _ = await speaker.speak(text)
+            guard sampleIndex == sampleCount else { return }
+            isPlayingSample = false
+        }
+    }
+
+    /// Stops „Probe hören“, e.g. when the tempo changes: the new tempo
+    /// applies only to the next text.
+    func stopSample() {
+        guard isPlayingSample else { return }
+        isPlayingSample = false
+        speaker.stop()
     }
 
     /// A tap on a row, or Öffnen: the chart page opens on that row. The
@@ -76,12 +111,29 @@ final class AppModel {
     }
 
     func closeSettings() {
+        speaker.stop()
         router.showTable()
     }
 
-    /// Ends Vorlesen on each page and stops the voice.
+    /// The tempo that the settings store. A new install reads at „Normal“.
+    private static var storedSpeechRate: SpeechRate {
+        UserDefaults.standard.string(forKey: SpeechRate.storageKey).flatMap(SpeechRate.init) ?? .standard
+    }
+
+    /// The columns that the settings store. Without a stored value, Kurs and Tag.
+    private static var storedSpokenColumns: SpokenColumns {
+        guard UserDefaults.standard.object(forKey: SpokenColumns.storageKey) != nil else { return .standard }
+        return SpokenColumns(rawValue: UserDefaults.standard.integer(forKey: SpokenColumns.storageKey))
+    }
+
+    private static func makeSpeechSettings(viewModel: MainViewModel, columns: SpokenColumns) -> TableSpeechSettings {
+        TableSpeechSettings(columns: columns, rangeMode: viewModel.rangeMode, oneYearMode: viewModel.oneYearMode)
+    }
+
+    /// Ends Vorlesen on each page and the sample, and stops the voice.
     func stopAllSpeech() {
         table.reader.pauseReading()
         chartPage?.close()
+        stopSample()
     }
 }

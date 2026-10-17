@@ -159,16 +159,19 @@ public final class MainViewModel {
     /// see `Instrument.isValidSymbol`), or if that symbol is already in
     /// the group (adding a duplicate would produce two identically-keyed
     /// rows in the table).
-    public func addConstituent(name: String, symbol: String, to group: MarketGroup) {
+    /// - Returns: false when it ignored the entry, so the form can keep it.
+    @discardableResult
+    public func addConstituent(name: String, symbol: String, to group: MarketGroup) -> Bool {
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         let trimmedSymbol = symbol.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
-        guard !trimmedName.isEmpty, Instrument.isValidSymbol(trimmedSymbol) else { return }
-        guard !instruments.contains(where: { $0.group == group && $0.symbol.uppercased() == trimmedSymbol }) else { return }
+        guard !trimmedName.isEmpty, Instrument.isValidSymbol(trimmedSymbol) else { return false }
+        guard !instruments.contains(where: { $0.group == group && $0.symbol.uppercased() == trimmedSymbol }) else { return false }
 
         instruments.append(Instrument(symbol: trimmedSymbol, name: trimmedName, group: group))
         constituentsStore.save(instruments)
 
         if selectedGroup == group { applyRowsForSelectedGroup() }
+        return true
     }
 
     /// Removes a constituent from one group, whether it's a bundled default

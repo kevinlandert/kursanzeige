@@ -147,6 +147,35 @@ enum Theme {
     static let timestampFont = font(size: 24)
     static let progressFont = font(size: 22)
 
+    /// The settings page: cards as in Schlagzeilen, with large buttons
+    /// and checkboxes.
+    static let settingsHeaderHeight: CGFloat = 112
+    static let settingsTitleFont = font(size: 48, weight: .heavy)
+    static let settingsGap: CGFloat = 24
+    static let settingsCardPadding: CGFloat = 28
+    static let settingsCardSpacing: CGFloat = 20
+    static let settingsCardCornerRadius: CGFloat = 22
+    static let settingsCardBorderWidth: CGFloat = 3
+    static let settingsCardTitleFont = font(size: 34, weight: .heavy)
+    static let settingsTextFont = font(size: 28)
+    static let settingsHintFont = font(size: 22)
+    static let settingsButtonFont = font(size: 28)
+    static let settingsButtonHeight: CGFloat = 76
+    static let settingsButtonSpacing: CGFloat = 14
+    static let settingsCheckboxSize: CGFloat = 60
+    static let settingsCheckboxCornerRadius: CGFloat = 10
+    static let settingsCheckmarkFont = Font.system(size: 30, weight: .heavy)
+    /// The side padding of a text button, e.g. „Einstellungen“ and „‹ Kurse“.
+    static let textButtonPadding: CGFloat = 20
+    /// The list of instruments: its rows, their „Entfernen“ buttons and
+    /// the fields to add a ticker.
+    static let settingsListRowPadding: CGFloat = 8
+    static let settingsListLineWidth: CGFloat = 1
+    static let settingsSmallButtonPadding: CGFloat = 16
+    static let settingsSmallButtonHeight: CGFloat = 56
+    static let settingsFieldPadding: CGFloat = 18
+    static let settingsFieldHeight: CGFloat = 70
+
     static let rowVerticalPadding: CGFloat = 14
     /// Floor for row height: two lines of `nameFont` at ~1.1x tight line
     /// spacing, plus padding on both edges, so a name that wraps to two

@@ -8,14 +8,18 @@ import os
 /// AirPods and the lock screen control the app.
 ///
 /// `SpeechEngine` does the work with the synthesizer. `UtteranceTracker`
-/// tells when the text ended, and has tests in the package. `MainView`
+/// tells when the text ended, and has tests in the package. `AppModel`
 /// makes one speaker for the full app life, and both pages share it.
 @MainActor
 final class SynthesizerSpeaker: Speaking {
     private let tracker: UtteranceTracker
     private let engine: SpeechEngine
+    private let findSpeechRate: @MainActor () -> SpeechRate
 
-    init() {
+    /// - Parameter findSpeechRate: gives the „Sprechtempo“ of the settings
+    ///   at the start of each text.
+    init(findSpeechRate: @escaping @MainActor () -> SpeechRate) {
+        self.findSpeechRate = findSpeechRate
         let tracker = UtteranceTracker()
         self.tracker = tracker
         // The callbacks come in separate tasks. The tracker accepts them in any order.
@@ -35,8 +39,9 @@ final class SynthesizerSpeaker: Speaking {
         if tracker.isSpeaking {
             stop()
         }
+        let rateFactor = findSpeechRate().factor
         let isFinished = await tracker.speak { utteranceId in
-            engine.speak(text, utteranceId: utteranceId)
+            engine.speak(text, utteranceId: utteranceId, rateFactor: rateFactor)
         }
         if !tracker.isSpeaking {
             // After a cancel from outside, the rest of the text must not play later.
@@ -72,9 +77,6 @@ private enum UtteranceEnd: Sendable {
 /// app of the lock screen and get the commands of the AirPods. Thus other
 /// audio stops while the voice reads. The option `duckOthers` would mix.
 private final class SpeechEngine: NSObject, AVSpeechSynthesizerDelegate, @unchecked Sendable {
-    /// A bit faster than the default voice, so a full table does not take
-    /// too long.
-    private static let speechRateFactor: Float = 1.05
     private static let language = "de-DE"
     /// The time without speech before the audio session ends. It is longer
     /// than the pause of 1 s between two rows. Thus other audio does not
@@ -102,14 +104,15 @@ private final class SpeechEngine: NSObject, AVSpeechSynthesizerDelegate, @unchec
         queue.async { self.voice = Self.findBestVoice() }
     }
 
-    func speak(_ text: String, utteranceId: Int) {
+    /// - Parameter rateFactor: the factor of „Sprechtempo“ on the default rate.
+    func speak(_ text: String, utteranceId: Int, rateFactor: Float) {
         queue.async {
             self.deactivation?.cancel()
             self.deactivation = nil
             self.activateAudioSession()
             let utterance = TrackedUtterance(string: text, utteranceId: utteranceId)
             utterance.voice = self.voice
-            utterance.rate = AVSpeechUtteranceDefaultSpeechRate * Self.speechRateFactor
+            utterance.rate = AVSpeechUtteranceDefaultSpeechRate * rateFactor
             self.synthesizer.speak(utterance)
         }
     }

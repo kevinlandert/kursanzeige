@@ -355,6 +355,15 @@ struct MainViewModelTests {
         #expect(viewModel.constituents(in: .switzerland).map(\.symbol) == ["NESN.SW", "NOVN.SW"])
     }
 
+    @Test("an add tells whether it added the instrument, so the form keeps a refused entry")
+    func addTellsWhetherItAdded() {
+        let viewModel = MainViewModel(instruments: testInstruments, fetcher: ScriptedFetcher(scripts: [:]), cache: InMemoryCache())
+
+        #expect(viewModel.addConstituent(name: "Adecco", symbol: "ADEN.SW", to: .switzerland))
+        #expect(viewModel.addConstituent(name: "Adecco", symbol: "ADEN.SW", to: .switzerland) == false)
+        #expect(viewModel.addConstituent(name: "Bad", symbol: "A B", to: .switzerland) == false)
+    }
+
     @Test func addConstituentAlreadyInGroupIsIgnored() {
         let viewModel = MainViewModel(instruments: testInstruments, fetcher: ScriptedFetcher(scripts: [:]), cache: InMemoryCache(), constituentsStore: InMemoryConstituentsStore(initial: testInstruments))
 

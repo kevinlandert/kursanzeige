@@ -12,7 +12,9 @@ struct MainView: View {
     let appModel: AppModel
     @State private var showingSettings = false
     /// Stored, so the choice stays after the app closes.
-    @AppStorage(Appearance.storageKey) private var appearance = Appearance.light
+    @AppStorage(Appearance.storageKey) private var appearance = Appearance.standard
+    /// The columns that the voice reads. The settings change them.
+    @AppStorage(SpokenColumns.storageKey) private var spokenColumns = SpokenColumns.standard
 
     private var viewModel: MainViewModel { appModel.viewModel }
 
@@ -33,10 +35,10 @@ struct MainView: View {
         }
         .background(Theme.background)
         // A new group, a new sort or new prices give the table new rows.
-        .onChange(of: shownTable) { appModel.showRows() }
-        .preferredColorScheme(appearance == .dark ? .dark : .light)
+        .onChange(of: shownTable) { appModel.showRows(spokenColumns: spokenColumns) }
+        .applyAppearance(appearance)
         .fullScreenCover(isPresented: $showingSettings, onDismiss: appModel.closeSettings) {
-            SettingsView(viewModel: viewModel)
+            SettingsView(appModel: appModel)
         }
         .fullScreenCover(item: chartPageBinding) { page in
             ChartPage(model: page, onClose: appModel.closeChart)
@@ -66,10 +68,14 @@ struct MainView: View {
         }
     }
 
-    /// The group and its rows together: two groups without rows also
-    /// count as a change.
+    /// The group, its rows and what the voice reads, together: two groups
+    /// without rows also count as a change, and so does a new choice in
+    /// the settings.
     private var shownTable: ShownTable {
-        ShownTable(group: viewModel.selectedGroup, rows: viewModel.displayedRows)
+        ShownTable(
+            group: viewModel.selectedGroup, rows: viewModel.displayedRows, spokenColumns: spokenColumns,
+            rangeMode: viewModel.rangeMode, oneYearMode: viewModel.oneYearMode
+        )
     }
 
     private var openButton: BottomButtonContent {
@@ -121,14 +127,10 @@ struct MainView: View {
             if !viewModel.isRefreshing && !viewModel.failedFetches.isEmpty {
                 FailureStatusView(failedFetches: viewModel.failedFetches, totalCount: viewModel.totalInstrumentCount)
             }
-            AppearanceButton(appearance: appearance) {
-                appearance = appearance.toggled
-            }
             SettingsButton {
                 appModel.openSettings()
                 showingSettings = true
             }
-            .padding(.leading, Theme.topBarButtonGap)
             RefreshButton(isRefreshing: viewModel.isRefreshing) {
                 Task { await viewModel.refresh() }
             }
@@ -138,10 +140,14 @@ struct MainView: View {
     }
 }
 
-/// The shown group with its rows, in the order of the table.
+/// The shown group with its rows, in the order of the table, and what the
+/// voice reads of each row.
 private struct ShownTable: Equatable {
     let group: MarketGroup
     let rows: [InstrumentRow]
+    let spokenColumns: SpokenColumns
+    let rangeMode: RangeMode
+    let oneYearMode: OneYearMode
 }
 
 #Preview {

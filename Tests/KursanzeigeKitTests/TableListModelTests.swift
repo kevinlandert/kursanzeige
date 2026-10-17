@@ -40,7 +40,7 @@ struct TableListModelTests {
         model.reader.startReading()
         await waitUntil { fakes.speaker.isSpeaking }
 
-        model.show(group: .usa, rows: [createRow(apple)])
+        model.show(group: .usa, rows: [createRow(apple)], settings: .standard)
         await waitUntil { fakes.speaker.spokenTexts.count == 2 }
 
         #expect(fakes.speaker.spokenTexts.last == "USA. Apple, kein Kurs.")
@@ -53,8 +53,8 @@ struct TableListModelTests {
         let model = createModel(fakes)
         model.reader.placeCursor(at: 2)
 
-        model.show(group: .usa, rows: [createRow(apple)])
-        model.show(group: .switzerland, rows: [createRow(nestle), createRow(novartis), createRow(roche)])
+        model.show(group: .usa, rows: [createRow(apple)], settings: .standard)
+        model.show(group: .switzerland, rows: [createRow(nestle), createRow(novartis), createRow(roche)], settings: .standard)
 
         #expect(model.cursorInstrument == roche)
     }
@@ -65,7 +65,7 @@ struct TableListModelTests {
         let model = createModel(fakes)
         model.reader.placeCursor(at: 0)
 
-        model.show(group: .switzerland, rows: [createRow(roche), createRow(novartis), createRow(nestle)])
+        model.show(group: .switzerland, rows: [createRow(roche), createRow(novartis), createRow(nestle)], settings: .standard)
         await model.reader.waitForSpeech()
 
         #expect(model.reader.cursorIndex == 2)
@@ -78,7 +78,7 @@ struct TableListModelTests {
         let fakes = ListFakes()
         let model = createModel(fakes)
 
-        model.show(group: .switzerland, rows: [createRow(roche), createRow(novartis), createRow(nestle)])
+        model.show(group: .switzerland, rows: [createRow(roche), createRow(novartis), createRow(nestle)], settings: .standard)
         model.reader.showPrevious(readsRow: true)
         await model.reader.waitForSpeech()
 
@@ -116,6 +116,37 @@ struct TableListModelTests {
         let model = createModel(ListFakes(), rows: [])
 
         #expect(model.openCursorRow() == nil)
+    }
+
+    @Test("new speech settings change the text of each row, silently")
+    func newSettingsChangeRowText() async {
+        let fakes = ListFakes()
+        let model = createModel(fakes, rows: [createRow(nestle, price: 77.96)])
+        let onlyNames = TableSpeechSettings(columns: [], rangeMode: .threeMonth, oneYearMode: .trailing)
+
+        model.show(group: .switzerland, rows: [createRow(nestle, price: 77.96)], settings: onlyNames)
+        await model.reader.waitForSpeech()
+        #expect(fakes.speaker.spokenTexts.isEmpty)
+        #expect(model.cursorInstrument == nestle)
+
+        model.reader.startReading()
+        await model.reader.waitForSpeech()
+        #expect(fakes.speaker.spokenTexts.first == "Nestlé.")
+    }
+
+    @Test("the sample of the settings is the cursor row with the chosen columns")
+    func sampleIsCursorRow() {
+        let model = createModel(ListFakes(), rows: [createRow(nestle, price: 77.96), createRow(novartis, price: 124.4)])
+        model.reader.placeCursor(at: 1)
+
+        #expect(model.sampleText == "Novartis, 124,4.")
+    }
+
+    @Test("the sample of an empty group says that it has no prices")
+    func sampleOfEmptyGroup() {
+        let model = createModel(ListFakes(), rows: [])
+
+        #expect(model.sampleText == "Keine Kurse.")
     }
 
     @Test("the lock screen shows the instrument name and the group")

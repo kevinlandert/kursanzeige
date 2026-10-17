@@ -19,9 +19,9 @@ struct TableHeaderView: View {
             ColumnDivider()
             headerCell("Tag", column: .day, width: layout.day)
             ColumnDivider()
-            headerCell(rangeMode == .oneMonth ? "1-Mt." : "3-Mt.", column: .threeMonth, width: layout.threeMonth)
+            headerCell(rangeMode.headerTitle, column: .threeMonth, width: layout.threeMonth)
             ColumnDivider()
-            headerCell(oneYearMode == .trailing ? "1-Jahr" : "YTD", column: .oneYear, width: layout.oneYear)
+            headerCell(oneYearMode.headerTitle, column: .oneYear, width: layout.oneYear)
         }
         .padding(.horizontal, Theme.rowInset)
         .padding(.vertical, Theme.rowVerticalPadding)

@@ -133,19 +133,3 @@ struct PaletteTests {
         #expect(Palette.dark.text == RGBColor(hex: 0xFFFFFF))
     }
 }
-
-@Suite("Appearance")
-struct AppearanceTests {
-    @Test("the other appearance of light is dark, and of dark is light")
-    func toggledAppearanceIsTheOther() {
-        #expect(Appearance.light.toggled == .dark)
-        #expect(Appearance.dark.toggled == .light)
-    }
-
-    @Test("the stored text gives the same appearance again")
-    func storedTextGivesSameAppearance() {
-        for appearance in [Appearance.light, Appearance.dark] {
-            #expect(Appearance(rawValue: appearance.rawValue) == appearance)
-        }
-    }
-}

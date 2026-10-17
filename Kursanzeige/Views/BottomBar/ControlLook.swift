@@ -9,12 +9,16 @@ enum ControlLook {
     /// The inverted fill: Öffnen and Schliessen. It is black in light and
     /// white in dark.
     case inverted
+    /// A button at its limit, e.g. „Schneller“ at the fastest tempo. Grey
+    /// text with a tested contrast on grey, so it stays clear.
+    case disabled
 
     var fill: Color {
         switch self {
         case .outlined: Theme.background
         case .primary: Theme.primary
         case .inverted: Theme.invertedFill
+        case .disabled: Theme.headerBackground
         }
     }
 
@@ -23,6 +27,7 @@ enum ControlLook {
         case .outlined: Theme.text
         case .primary: Theme.primaryText
         case .inverted: Theme.invertedText
+        case .disabled: Theme.disabledButtonForeground
         }
     }
 
@@ -31,6 +36,7 @@ enum ControlLook {
         case .outlined: Theme.outline
         case .primary: Theme.primary
         case .inverted: Theme.invertedFill
+        case .disabled: Theme.headerBackground
         }
     }
 }
