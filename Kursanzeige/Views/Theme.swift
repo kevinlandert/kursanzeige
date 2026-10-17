@@ -145,6 +145,8 @@ enum Theme {
     static let refreshButtonFont = font(size: 26)
     static let statusFont = font(size: 20)
     static let timestampFont = font(size: 24)
+    /// „Kurse“ in the top bar, the size of the titles in Schlagzeilen.
+    static let pageTitleFont = font(size: 46)
     static let progressFont = font(size: 22)
 
     /// The settings page: cards as in Schlagzeilen, with large buttons
@@ -205,6 +207,11 @@ enum Theme {
     /// The gap between the buttons of the top bar. A wide gap makes a tap
     /// on the wrong button less probable.
     static let topBarButtonGap: CGFloat = 40
+    /// The gap between „Kurse“ and the time of the last refresh under it.
+    static let topBarTitleGap: CGFloat = 4
+    /// The height of the row under „Kurse“: the progress bar with its
+    /// text, which is higher than one line of `timestampFont`.
+    static let updateLineHeight: CGFloat = 44
 }
 
 /// Proportional column widths shared by the header and every row so they

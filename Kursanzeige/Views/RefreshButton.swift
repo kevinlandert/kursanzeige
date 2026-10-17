@@ -1,9 +1,9 @@
 import SwiftUI
 
-/// The "Aktualisieren" button, top right. During a refresh, the button
-/// shows "Lädt…" and does not accept a tap. A second tap would start a
-/// second fetch. The view model also prevents this, but the button must
-/// show it.
+/// The "Aktualisieren" button in the top bar, left of „Einstellungen“.
+/// During a refresh, the button shows "Lädt…" and does not accept a tap.
+/// A second tap would start a second fetch. The view model also prevents
+/// this, but the button must show it.
 struct RefreshButton: View {
     let isRefreshing: Bool
     let action: () -> Void

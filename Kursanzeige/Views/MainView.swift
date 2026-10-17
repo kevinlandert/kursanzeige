@@ -1,7 +1,7 @@
 import SwiftUI
 import KursanzeigeKit
 
-/// The main page: a status/refresh bar, the group selector, the table and
+/// The main page: the title bar with the refresh, the group selector, the table and
 /// the bottom bar. Opens showing whatever was cached from the last
 /// successful refresh -- "Aktualisieren" is a deliberate, visible action
 /// rather than something that happens silently on launch. A sideways
@@ -104,40 +104,60 @@ struct MainView: View {
         viewModel.select(group)
     }
 
+    /// „Kurse“ over the time of the last refresh, as in Schlagzeilen. The
+    /// buttons are in the row of the title. Thus the time has the full
+    /// width and always fits in one line.
+    ///
     /// The progress and the failure count show in this bar, not in a row
     /// of their own. Thus the group buttons and the table never move.
-    ///
-    /// During a refresh, the progress shows in place of the date. The bar
-    /// does not have space for both next to the buttons. The date is old
-    /// during a refresh, and the new date shows after it.
-    ///
-    /// The bar has a fixed height and centers its items. A text baseline
-    /// does not work: for an item without text, the baseline is the
-    /// bottom edge, and that edge changes when an item comes or goes.
     private var topBar: some View {
+        VStack(alignment: .leading, spacing: Theme.topBarTitleGap) {
+            titleRow
+            updateRow
+        }
+    }
+
+    /// The row centers its items. A text baseline does not work: for an
+    /// item without text, the baseline is the bottom edge.
+    private var titleRow: some View {
         HStack(alignment: .center) {
-            if viewModel.isRefreshing {
-                RefreshProgressView(progress: viewModel.progress)
-            } else {
-                Text(Formatting.asOf(viewModel.lastUpdated))
-                    .font(Theme.timestampFont)
-                    .foregroundStyle(Theme.text)
-            }
+            Text("Kurse")
+                .font(Theme.pageTitleFont)
+                .foregroundStyle(Theme.text)
+                .accessibilityAddTraits(.isHeader)
             Spacer()
-            if !viewModel.isRefreshing && !viewModel.failedFetches.isEmpty {
-                FailureStatusView(failedFetches: viewModel.failedFetches, totalCount: viewModel.totalInstrumentCount)
-            }
             RefreshButton(isRefreshing: viewModel.isRefreshing) {
                 Task { await viewModel.refresh() }
             }
-            // The rightmost button, as in Schlagzeilen.
             SettingsButton {
                 appModel.openSettings()
                 showingSettings = true
             }
             .padding(.leading, Theme.topBarButtonGap)
         }
-        .frame(height: Theme.topBarHeight)
+    }
+
+    /// During a refresh, the progress shows in place of the time. The time
+    /// is old during a refresh, and the new time shows after it. The row
+    /// has the height of the progress, so it does not get higher during a
+    /// refresh.
+    private var updateRow: some View {
+        HStack(alignment: .center) {
+            if viewModel.isRefreshing {
+                RefreshProgressView(progress: viewModel.progress)
+            } else {
+                Text(UpdateTexts.updateLine(lastUpdate: viewModel.lastUpdated))
+                    .font(Theme.timestampFont)
+                    .foregroundStyle(Theme.text)
+                    .accessibilityLabel(UpdateTexts.updateLabel(lastUpdate: viewModel.lastUpdated))
+                    .accessibilityIdentifier("updateLine")
+            }
+            Spacer()
+            if !viewModel.isRefreshing && !viewModel.failedFetches.isEmpty {
+                FailureStatusView(failedFetches: viewModel.failedFetches, totalCount: viewModel.totalInstrumentCount)
+            }
+        }
+        .frame(minHeight: Theme.updateLineHeight)
     }
 }
 

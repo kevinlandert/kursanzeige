@@ -53,14 +53,6 @@ enum Formatting {
         guard let asOf, zurichCalendar.isDateInToday(asOf) else { return .muted }
         return tone(for: percent)
     }
-
-    /// "Stand: 10.09.2026, 14:32" -- shown so it's obvious the data is a
-    /// snapshot, not live.
-    static func asOf(_ date: Date?) -> String {
-        guard let date else { return "Noch keine Daten" }
-        return "Stand: \(date.formatted(.dateTime.locale(swissLocale).day(.twoDigits).month(.twoDigits).year().hour().minute()))"
-    }
-
 }
 
 /// The color role of a value in the table. A row picks the colors of its

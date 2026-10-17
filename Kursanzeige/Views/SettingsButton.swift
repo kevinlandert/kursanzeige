@@ -1,8 +1,9 @@
 import SwiftUI
 
 /// „Einstellungen“ at the right end of the top bar, after „Aktualisieren“.
-/// It has a text and the same place as in Schlagzeilen. A tap opens the
-/// settings: the reader changes the Erscheinungsbild and the Sprechtempo there.
+/// It shows a text. It has the same place as in Schlagzeilen. A tap opens
+/// the settings: the reader changes the Erscheinungsbild and the
+/// Sprechtempo there.
 struct SettingsButton: View {
     let action: () -> Void
 
