@@ -10,13 +10,19 @@ public enum RangeMode: Sendable, Equatable {
         self == .oneMonth ? "1-Mt." : "3-Mt."
     }
 
-    /// The name on the range button of the settings.
+    /// The name on the range button of the settings, the same as on the
+    /// range button of the chart.
     public var choiceTitle: String {
-        spokenName
+        chartRange.displayName
     }
 
-    /// The name that the voice says before the change, e.g. „1 Monat“.
+    /// The name that the voice says before the change, e.g. „ein Monat“.
     public var spokenName: String {
-        self == .oneMonth ? "1 Monat" : "3 Monate"
+        chartRange.spokenName
+    }
+
+    /// The chart range with the same span.
+    private var chartRange: ChartRange {
+        self == .oneMonth ? .oneMonth : .threeMonths
     }
 }

@@ -40,7 +40,7 @@ struct TableSpeechTests {
         let row = createRow("Nvidia", group: .usa, price: 217.23, day: -1.8, unit: .currency("USD"), oneMonth: 2.2, yearToDate: 5)
         let settings = createSettings([.price, .day, .shortRange, .longRange], rangeMode: .oneMonth, oneYearMode: .yearToDate)
 
-        #expect(TableSpeech.text(row, settings: settings) == "Nvidia, 217,23 Dollar, Tag minus 1,8 Prozent, 1 Monat plus 2,2 Prozent, seit Jahresbeginn plus 5,0 Prozent.")
+        #expect(TableSpeech.text(row, settings: settings) == "Nvidia, 217,23 Dollar, Tag minus 1,8 Prozent, ein Monat plus 2,2 Prozent, seit Jahresbeginn plus 5,0 Prozent.")
     }
 
     @Test("3 Monate and 1 Jahr read the values of those columns")

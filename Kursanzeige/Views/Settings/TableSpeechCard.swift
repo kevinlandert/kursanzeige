@@ -101,8 +101,8 @@ struct TableSpeechCard: View {
 
     private var shortRangeChoice: some View {
         TwoOptionToggle(
-            leftLabel: RangeMode.oneMonth.choiceTitle, leftValue: RangeMode.oneMonth,
-            rightLabel: RangeMode.threeMonth.choiceTitle, rightValue: RangeMode.threeMonth,
+            leftLabel: RangeMode.oneMonth.choiceTitle, leftSpokenLabel: RangeMode.oneMonth.spokenName, leftValue: RangeMode.oneMonth,
+            rightLabel: RangeMode.threeMonth.choiceTitle, rightSpokenLabel: RangeMode.threeMonth.spokenName, rightValue: RangeMode.threeMonth,
             selection: viewModel.rangeMode, font: Theme.settingsButtonFont
         ) { newValue in
             guard newValue != viewModel.rangeMode else { return }
@@ -112,8 +112,8 @@ struct TableSpeechCard: View {
 
     private var longRangeChoice: some View {
         TwoOptionToggle(
-            leftLabel: OneYearMode.trailing.choiceTitle, leftValue: OneYearMode.trailing,
-            rightLabel: OneYearMode.yearToDate.choiceTitle, rightValue: OneYearMode.yearToDate,
+            leftLabel: OneYearMode.trailing.choiceTitle, leftSpokenLabel: OneYearMode.trailing.spokenName, leftValue: OneYearMode.trailing,
+            rightLabel: OneYearMode.yearToDate.choiceTitle, rightSpokenLabel: OneYearMode.yearToDate.spokenName, rightValue: OneYearMode.yearToDate,
             selection: viewModel.oneYearMode, font: Theme.settingsButtonFont
         ) { newValue in
             guard newValue != viewModel.oneYearMode else { return }

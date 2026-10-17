@@ -81,14 +81,12 @@ public final class InstrumentChartViewModel: Identifiable {
     }
 
     /// The text that "Vorlesen" reads for this chart, e.g. "Nestlé, 1 Jahr,
-    /// 77,96 Franken, plus 3,2 Prozent". The range name is the label of the
-    /// range button, so the voice and the screen use the same words. `nil`
-    /// without closes.
+    /// 77,96 Franken, plus 3,2 Prozent". `nil` without closes.
     public func spokenSummary() -> String? {
         guard let lastClose = points.last?.close else { return nil }
         return ChartSpeech.text(
             name: instrument.name,
-            rangeName: range.displayName,
+            rangeName: range.spokenName,
             price: lastClose,
             group: instrument.group,
             unit: history?.unit,

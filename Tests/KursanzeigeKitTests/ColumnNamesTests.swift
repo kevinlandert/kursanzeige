@@ -11,8 +11,22 @@ struct ColumnNamesTests {
         #expect(RangeMode.threeMonth.headerTitle == "3-Mt.")
         #expect(RangeMode.oneMonth.choiceTitle == "1 Monat")
         #expect(RangeMode.threeMonth.choiceTitle == "3 Monate")
-        #expect(RangeMode.oneMonth.spokenName == "1 Monat")
         #expect(RangeMode.threeMonth.spokenName == "3 Monate")
+    }
+
+    /// The voice reads the digit in „1 Monat“ as „eins“.
+    @Test("the voice says „ein Monat“ where the screen shows „1 Monat“")
+    func voiceSaysEinMonat() {
+        #expect(RangeMode.oneMonth.spokenName == "ein Monat")
+        #expect(ChartRange.oneMonth.displayName == "1 Monat")
+        #expect(ChartRange.oneMonth.spokenName == "ein Monat")
+    }
+
+    @Test("the other chart ranges have the same name on the screen and for the voice")
+    func otherChartRangesHaveOneName() {
+        #expect(ChartRange.threeMonths.spokenName == "3 Monate")
+        #expect(ChartRange.oneYear.spokenName == "1 Jahr")
+        #expect(ChartRange.fiveYears.spokenName == "5 Jahre")
     }
 
     /// The voice would spell the letters of the English „YTD“.

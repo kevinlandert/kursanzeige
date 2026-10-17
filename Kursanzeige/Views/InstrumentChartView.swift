@@ -113,6 +113,7 @@ struct InstrumentChartView: View {
                         .choiceButtonLook(isSelected: isActive)
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel(range.spokenName)
                 .accessibilityAddTraits(isActive ? [.isSelected] : [])
             }
         }

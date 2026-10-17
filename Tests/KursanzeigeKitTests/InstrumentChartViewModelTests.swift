@@ -143,6 +143,15 @@ struct InstrumentChartViewModelTests {
         #expect(viewModel.spokenSummary() == "Nestlé, 1 Jahr, 65, plus 62,5 Prozent")
     }
 
+    @Test("the spoken summary says „ein Monat“ for the range „1 Monat“")
+    func spokenSummarySaysEinMonat() {
+        let viewModel = createViewModel(storedHistory: createStoredHistory(), fetcher: CountingFetcher())
+
+        viewModel.select(.oneMonth)
+
+        #expect(viewModel.spokenSummary()?.hasPrefix("Nestlé, ein Monat, ") == true)
+    }
+
     @Test("the spoken summary gives the currency after the last close")
     func spokenSummaryGivesCurrencyAfterLastClose() {
         let viewModel = createViewModel(storedHistory: createStoredHistory(unit: .currency("CHF")), fetcher: CountingFetcher())

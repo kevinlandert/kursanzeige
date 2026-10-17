@@ -6,10 +6,14 @@ import SwiftUI
 /// label text renders regardless of the `.font()` modifier, which fights
 /// the "make it way bigger" requirement this screen exists for. Same
 /// visual language as `GroupSelectorView`'s buttons.
+///
+/// VoiceOver reads the spoken labels, e.g. „ein Monat“ for „1 Monat“.
 struct TwoOptionToggle<Option: Equatable>: View {
     let leftLabel: String
+    let leftSpokenLabel: String
     let leftValue: Option
     let rightLabel: String
+    let rightSpokenLabel: String
     let rightValue: Option
     let selection: Option
     let font: Font
@@ -17,12 +21,12 @@ struct TwoOptionToggle<Option: Equatable>: View {
 
     var body: some View {
         HStack(spacing: 10) {
-            optionButton(leftLabel, value: leftValue)
-            optionButton(rightLabel, value: rightValue)
+            optionButton(leftLabel, spokenLabel: leftSpokenLabel, value: leftValue)
+            optionButton(rightLabel, spokenLabel: rightSpokenLabel, value: rightValue)
         }
     }
 
-    private func optionButton(_ title: String, value: Option) -> some View {
+    private func optionButton(_ title: String, spokenLabel: String, value: Option) -> some View {
         let isActive = selection == value
         return Button {
             onSelect(value)
@@ -36,11 +40,16 @@ struct TwoOptionToggle<Option: Equatable>: View {
                 .choiceButtonLook(isSelected: isActive)
         }
         .buttonStyle(.plain)
+        .accessibilityLabel(spokenLabel)
         .accessibilityAddTraits(isActive ? [.isSelected] : [])
     }
 }
 
 #Preview {
-    TwoOptionToggle(leftLabel: "1 Monat", leftValue: 0, rightLabel: "3 Monate", rightValue: 1, selection: 1, font: .system(size: 26, weight: .medium)) { _ in }
+    TwoOptionToggle(
+        leftLabel: "1 Monat", leftSpokenLabel: "ein Monat", leftValue: 0,
+        rightLabel: "3 Monate", rightSpokenLabel: "3 Monate", rightValue: 1,
+        selection: 1, font: .system(size: 26, weight: .medium)
+    ) { _ in }
         .padding()
 }

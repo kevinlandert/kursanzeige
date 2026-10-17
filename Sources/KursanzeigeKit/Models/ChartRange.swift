@@ -2,8 +2,7 @@ import Foundation
 
 /// How far back the instrument chart overlay's line goes. A single
 /// per-chart toggle -- picking a new range cuts a different part of the
-/// stored price history, with no new fetch. The voice and the range
-/// buttons use the same `displayName`.
+/// stored price history, with no new fetch.
 /// The case order is the order of the range buttons, shortest first.
 public enum ChartRange: CaseIterable, Sendable, Hashable {
     case oneMonth
@@ -19,6 +18,12 @@ public enum ChartRange: CaseIterable, Sendable, Hashable {
         case .oneYear: "1 Jahr"
         case .fiveYears: "5 Jahre"
         }
+    }
+
+    /// The name that the voice says. The voice reads the digit in
+    /// „1 Monat“ as „eins“, so this range has the word „ein“.
+    public var spokenName: String {
+        self == .oneMonth ? "ein Monat" : displayName
     }
 
     /// The first day of this range, counted back from `end` in calendar
