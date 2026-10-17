@@ -27,12 +27,12 @@ Put the AirPods in your ears and open the table.
 Turn VoiceOver on: Settings › Accessibility › VoiceOver.
 
 - [ ] Each bottom button reads its name and its hint, e.g. „Nächste … Wählt die nächste Zeile und liest sie vor.“
-- [ ] The status line reads as one element, e.g. „Nummer 3 von 12 ausgewählt“.
+- [ ] The status line reads as one element, e.g. „Nestlé ausgewählt“.
 - [ ] Double-tap Nächste. VoiceOver reads the new row once. The voice of the app is silent, so two voices never speak together.
 - [ ] Double-tap Nächste on the last row. VoiceOver says „Ende der Liste.“
 - [ ] Double-tap a group button, e.g. „USA“. VoiceOver says the group and the cursor row.
 - [ ] Double-tap Vorlesen. The voice of the app reads, and VoiceOver does not read the rows too.
-- [ ] A table row reads its number, the name and the values, and the hint „Zeigt den Verlauf dieser Zeile.“
+- [ ] A table row reads the name and the values, and the hint „Zeigt den Verlauf dieser Zeile.“
 - [ ] Double-tap a row. Its chart opens.
 - [ ] On the chart page, VoiceOver does not reach the buttons of the table under it.
 - [ ] A three-finger swipe to the left on the chart page shows the next chart.
@@ -40,7 +40,7 @@ Turn VoiceOver on: Settings › Accessibility › VoiceOver.
 ## Voice and screen
 
 - [ ] A tap on Nächste or Vorherige moves the yellow row without speech.
-- [ ] Vorlesen in the table reads „Nummer eins. …“, waits about 1 s, and reads the next row.
+- [ ] Vorlesen in the table reads the name and the values of a row, e.g. „Nestlé, 77,96 Franken, plus 0,5 Prozent.“, waits about 1 s, and reads the next row.
 - [ ] Vorlesen on the chart page reads only the shown chart and then stops.
 - [ ] A group change during Vorlesen stops and says the new group and the row.
 - [ ] Quick taps on Nächste during Vorlesen never give two voices at the same time.

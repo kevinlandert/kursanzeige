@@ -28,7 +28,7 @@ struct PerformanceTableView: View {
             // up front so the columns' own widths still sum to the space
             // actually available for text.
             let dividerCount = 4
-            let usableWidth = geometry.size.width - Theme.rowInset * 2 - Theme.numberColumnWidth - Theme.columnDividerWidth * CGFloat(dividerCount)
+            let usableWidth = geometry.size.width - Theme.rowInset * 2 - Theme.columnDividerWidth * CGFloat(dividerCount)
             let layout = ColumnLayout(totalWidth: usableWidth)
             let rowHeight = max(Theme.minRowHeight, (geometry.size.height - Theme.headerHeight) / 8)
 
@@ -57,7 +57,7 @@ struct PerformanceTableView: View {
 
     private func makeRow(_ row: InstrumentRow, index: Int, height: CGFloat) -> some View {
         let isCursor = row.id == cursorRowId
-        return TableRowView(row: row, number: index + 1, isCursor: isCursor, oneYearMode: oneYearMode, rangeMode: rangeMode)
+        return TableRowView(row: row, isCursor: isCursor, oneYearMode: oneYearMode, rangeMode: rangeMode)
             .frame(height: height)
             .background(rowBackground(index: index, isCursor: isCursor))
             .overlay {

@@ -4,7 +4,7 @@ import Observation
 /// that steps through the charts of the shown group. The rows are the
 /// instruments in the order of the table when the page opened. The page
 /// opens silently on the tapped row, and keeps the chosen range on each
-/// step. A chart reads „Nummer drei.“ and then its summary. Vorlesen
+/// step. A chart reads its summary, e.g. „Nestlé, 1 Jahr, …“. Vorlesen
 /// reads only the shown chart: the person decides when the next chart shows.
 @Observable
 @MainActor
@@ -93,6 +93,6 @@ public final class ChartPageModel: Identifiable {
         let rowChart = chart.instrument == instrument ? chart : makeChart(instrument, chart.range)
         await rowChart.load()
         let summary = rowChart.spokenSummary() ?? "\(instrument.name), kein Verlauf"
-        return ListTexts.numbered("\(summary).", number: rowIndex + 1)
+        return "\(summary)."
     }
 }

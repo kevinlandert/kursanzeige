@@ -13,8 +13,6 @@ struct TableHeaderView: View {
 
     var body: some View {
         HStack(spacing: 0) {
-            // Over the number badges of the rows.
-            Color.clear.frame(width: Theme.numberColumnWidth)
             headerCell("Name", column: .name, width: layout.name)
             ColumnDivider()
             headerCell("Kurs", column: .price, width: layout.price)

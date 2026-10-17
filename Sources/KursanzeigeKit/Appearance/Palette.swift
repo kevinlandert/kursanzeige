@@ -15,12 +15,8 @@ public struct Palette: Sendable, Equatable {
     public let mutedText: RGBColor
     public let positive: RGBColor
     public let negative: RGBColor
-    /// A yellow that is different from `positive` and `negative`, so the
-    /// line never looks like a rise or a fall. The label of the current
-    /// price has this color too, so it must be clear as text.
-    public let chartLine: RGBColor
     /// The box around the chart. In dark mode it is grey: a white box on
-    /// black is too bright next to the yellow line.
+    /// black is too bright next to the colored line.
     public let chartBorder: RGBColor
     /// The background of a selected button.
     public let accent: RGBColor
@@ -32,9 +28,8 @@ public struct Palette: Sendable, Equatable {
     public let buttonText: RGBColor
     /// The yellow fill of the cursor row, as in Schlagzeilen.
     public let cursor: RGBColor
-    /// The text on `cursor` and the fill of the number badge of the cursor
-    /// row. It stays black in both sets, so the reader finds the cursor row
-    /// the same way.
+    /// The text on `cursor`. It stays black in both sets, so the reader
+    /// finds the cursor row the same way.
     public let cursorText: RGBColor
     /// The "Tag" value on `cursor` when the last close is not from today.
     public let cursorMutedText: RGBColor
@@ -59,8 +54,7 @@ public struct Palette: Sendable, Equatable {
     public let outline: RGBColor
 
     /// The row bands and the plus and minus colors have measured contrast
-    /// values. Light green #3A9A3A had only 3.6 to 1 on white. The chart
-    /// line is dark gold: pure yellow has only 1.4 to 1 on white.
+    /// values. Light green #3A9A3A had only 3.6 to 1 on white.
     public static let light = Palette(
         background: RGBColor(hex: 0xFFFFFF),
         headerBackground: RGBColor(hex: 0xF2F2F7),
@@ -71,7 +65,6 @@ public struct Palette: Sendable, Equatable {
         mutedText: RGBColor(hex: 0x5E5E66),
         positive: RGBColor(hex: 0x006400),
         negative: RGBColor(hex: 0xB00000),
-        chartLine: RGBColor(hex: 0x8A6500),
         chartBorder: RGBColor(hex: 0x000000),
         accent: RGBColor(hex: 0x0062D6),
         accentText: RGBColor(hex: 0x0062D6),
@@ -91,8 +84,8 @@ public struct Palette: Sendable, Equatable {
         outline: RGBColor(hex: 0x111111)
     )
 
-    /// A black page with white text gives the highest contrast. Plus,
-    /// minus and the yellow chart line are light, so they are clear on black.
+    /// A black page with white text gives the highest contrast. Plus and
+    /// minus are light, so they are clear on black.
     public static let dark = Palette(
         background: RGBColor(hex: 0x000000),
         headerBackground: RGBColor(hex: 0x1C1C1E),
@@ -103,7 +96,6 @@ public struct Palette: Sendable, Equatable {
         mutedText: RGBColor(hex: 0x9A9AA2),
         positive: RGBColor(hex: 0x4CD964),
         negative: RGBColor(hex: 0xFF6B6B),
-        chartLine: RGBColor(hex: 0xFFD60A),
         chartBorder: RGBColor(hex: 0x9A9AA2),
         accent: RGBColor(hex: 0x0A5FD0),
         accentText: RGBColor(hex: 0x8AB4FF),

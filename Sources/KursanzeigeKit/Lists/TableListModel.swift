@@ -1,8 +1,8 @@
 import Observation
 
 /// The cursor and the voice of the table on the main page. Each group is
-/// one list with its own saved cursor. A row reads „Nummer drei.“ and then
-/// its name, price and day change.
+/// one list with its own saved cursor. A row reads its name, price and day
+/// change.
 @Observable
 @MainActor
 public final class TableListModel {
@@ -57,8 +57,8 @@ public final class TableListModel {
     }
 
     private static func makeSpokenRows(_ rows: [InstrumentRow]) -> [SpokenRow] {
-        rows.enumerated().map { index, row in
-            let text = TableSpeech.text(row, number: index + 1)
+        rows.map { row in
+            let text = TableSpeech.text(row)
             return SpokenRow(id: row.id, title: row.instrument.name, speech: { text })
         }
     }

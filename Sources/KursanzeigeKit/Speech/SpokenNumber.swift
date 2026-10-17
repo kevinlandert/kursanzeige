@@ -28,19 +28,6 @@ enum SpokenNumber {
         return "\(percent < 0 ? "minus" : "plus") \(magnitude) Prozent"
     }
 
-    /// A whole number as a German word, e.g. 3 as „drei“ and 21 as
-    /// „einundzwanzig“. The formatter puts soft hyphens into a long word.
-    /// They have no use for the voice, so they go.
-    static func word(_ number: Int) -> String {
-        let formatter = NumberFormatter()
-        formatter.locale = germanLocale
-        formatter.numberStyle = .spellOut
-        let word = formatter.string(from: NSNumber(value: number)) ?? String(number)
-        return word.replacingOccurrences(of: softHyphen, with: "")
-    }
-
-    private static let softHyphen = "\u{AD}"
-
     private static func oneDecimal(_ value: Double) -> String {
         value.formatted(.number.locale(germanLocale).precision(.fractionLength(1)))
     }

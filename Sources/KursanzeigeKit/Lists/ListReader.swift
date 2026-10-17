@@ -40,12 +40,12 @@ public final class ListReader {
 
     /// The id of the cursor row. Nil when the list has no rows.
     public var cursorRowId: String? {
-        rows.indices.contains(cursorIndex) ? rows[cursorIndex].id : nil
+        cursorRow?.id
     }
 
-    /// „Nummer 3 von 8 ausgewählt“, or „Liest vor · Nummer 3 von 8“.
+    /// „Nestlé ausgewählt“, or „Liest vor · Nestlé“.
     public var statusText: String {
-        ListTexts.status(cursorIndex: cursorIndex, rowCount: rows.count, isReading: isReading)
+        ListTexts.status(title: cursorRow?.title, isReading: isReading)
     }
 
     public var statusStyle: StatusStyle {
@@ -54,8 +54,11 @@ public final class ListReader {
 
     /// The values of the lock screen for the cursor row.
     public var nowPlayingItem: NowPlayingItem {
-        let title = rows.indices.contains(cursorIndex) ? rows[cursorIndex].title : ListTexts.emptyListStatus
-        return NowPlayingItem(title: title, listName: list, isReading: isReading)
+        NowPlayingItem(title: cursorRow?.title ?? ListTexts.emptyListStatus, listName: list, isReading: isReading)
+    }
+
+    private var cursorRow: SpokenRow? {
+        rows.indices.contains(cursorIndex) ? rows[cursorIndex] : nil
     }
 
     private var rows: [SpokenRow]

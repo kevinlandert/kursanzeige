@@ -1,12 +1,12 @@
-/// The text read aloud for a table row, e.g. „Nummer drei. Nestlé, 77,96
-/// Franken, plus 0,5 Prozent.“ It gives the number of the row, the name,
-/// the price with its unit and the day change. The table shows no unit,
+/// The text read aloud for a table row, e.g. „Nestlé, 77,96 Franken,
+/// plus 0,5 Prozent.“ It gives the name, the price with its unit and the
+/// day change. The table shows no unit,
 /// but the voice tells it, because a number alone is not clear.
 /// `SpokenNumber` gives the number format.
 enum TableSpeech {
-    /// - Parameter number: the place of the row in the table, from 1.
-    static func text(_ row: InstrumentRow, number: Int) -> String {
-        ListTexts.numbered("\(rowText(row)).", number: number)
+    /// The full stop gives the voice a pause before the next row.
+    static func text(_ row: InstrumentRow) -> String {
+        "\(rowText(row))."
     }
 
     private static func rowText(_ row: InstrumentRow) -> String {

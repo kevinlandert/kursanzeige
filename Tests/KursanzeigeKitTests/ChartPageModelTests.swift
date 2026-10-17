@@ -75,7 +75,7 @@ struct ChartPageModelTests {
 
         #expect(model.chart.instrument == novartis)
         #expect(model.reader.cursorIndex == 1)
-        #expect(model.reader.statusText == "Nummer 2 von 3 ausgewählt")
+        #expect(model.reader.statusText == "Novartis ausgewählt")
         #expect(fakes.speaker.spokenTexts.isEmpty)
     }
 
@@ -92,7 +92,7 @@ struct ChartPageModelTests {
         #expect(fakes.speaker.spokenTexts.isEmpty)
     }
 
-    @Test("the next track of the AirPods shows the next chart and reads it with its number")
+    @Test("the next track of the AirPods shows the next chart and reads it")
     func nextTrackShowsAndReadsNextChart() async {
         let fakes = ListFakes()
         let model = createModel(fakes)
@@ -101,7 +101,7 @@ struct ChartPageModelTests {
         await model.reader.waitForSpeech()
 
         #expect(model.chart.instrument == roche)
-        #expect(fakes.speaker.spokenTexts == ["Nummer drei. Roche, 1 Jahr, 65, plus 62,5 Prozent."])
+        #expect(fakes.speaker.spokenTexts == ["Roche, 1 Jahr, 65, plus 62,5 Prozent."])
     }
 
     @Test("Vorherige shows the chart before and moves to the left")
@@ -162,7 +162,7 @@ struct ChartPageModelTests {
         model.select(.fiveYears)
         await waitUntil { fakes.speaker.spokenTexts.count == 2 }
 
-        #expect(fakes.speaker.spokenTexts.last == "Nummer zwei. Novartis, 5 Jahre, 65, plus 550,0 Prozent.")
+        #expect(fakes.speaker.spokenTexts.last == "Novartis, 5 Jahre, 65, plus 550,0 Prozent.")
     }
 
     @Test("a chart without a stored history reads its text after the fetch")
@@ -173,7 +173,7 @@ struct ChartPageModelTests {
         model.reader.showNext(readsRow: true)
         await model.reader.waitForSpeech()
 
-        #expect(fakes.speaker.spokenTexts == ["Nummer drei. Roche, 1 Jahr, 65, plus 62,5 Prozent."])
+        #expect(fakes.speaker.spokenTexts == ["Roche, 1 Jahr, 65, plus 62,5 Prozent."])
     }
 
     @Test("a chart whose fetch fails says that it has no history")
@@ -184,7 +184,7 @@ struct ChartPageModelTests {
         model.reader.showNext(readsRow: true)
         await model.reader.waitForSpeech()
 
-        #expect(fakes.speaker.spokenTexts == ["Nummer drei. Roche, kein Verlauf."])
+        #expect(fakes.speaker.spokenTexts == ["Roche, kein Verlauf."])
     }
 
     @Test("Vorlesen reads only the shown chart and stays on it")
@@ -195,7 +195,7 @@ struct ChartPageModelTests {
         model.reader.startReading()
         await model.reader.waitForSpeech()
 
-        #expect(fakes.speaker.spokenTexts == ["Nummer zwei. Novartis, 1 Jahr, 65, plus 62,5 Prozent."])
+        #expect(fakes.speaker.spokenTexts == ["Novartis, 1 Jahr, 65, plus 62,5 Prozent."])
         #expect(fakes.sleeper.pauses.isEmpty)
         #expect(model.chart.instrument == novartis)
         #expect(model.reader.isReading == false)

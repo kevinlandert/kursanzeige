@@ -1,8 +1,8 @@
 import KursanzeigeKit
 import SwiftUI
 
-/// The line above the bottom buttons: „Nummer 3 von 8 ausgewählt“ in the
-/// text color on the neutral fill, or „Liest vor · …“ in white on blue
+/// The line above the bottom buttons: „Nestlé ausgewählt“ in the text
+/// color on the neutral fill, or „Liest vor · Nestlé“ in white on blue
 /// while the app reads. VoiceOver reads it as one element.
 struct StatusLine: View {
     let text: String

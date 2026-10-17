@@ -3,20 +3,22 @@ import Charts
 import KursanzeigeKit
 
 /// The chart of one instrument, on the chart page: the instrument's close
-/// price over a chosen range, as a thick yellow line with the highest and
-/// lowest value labeled directly on the right-hand axis -- large and bold,
-/// since this app is for someone with low vision -- plus the current value
-/// in the same color as the line (label only, no line of its own). Near
-/// the high or low, the current value label moves away. A bold green/red
-/// line shows the percent change across the whole shown range. It shows
-/// the price history of the last "Aktualisieren", so it opens without a
-/// network. The currency of a stock, an ETF or a future shows next to the
-/// title.
+/// price over a chosen range, as a thick line with the highest and lowest
+/// value labeled directly on the right-hand axis -- large and bold, since
+/// this app is for someone with low vision -- plus the current value in
+/// the same color as the line (label only, no line of its own). Near the
+/// high or low, the current value label moves away. Below the chart, a
+/// bold line shows the percent change across the whole shown range. The
+/// line, the current value and the change are green for a rise and red
+/// for a fall, in the same color, so the direction shows three times. It shows the price
+/// history of the last "Aktualisieren", so it opens without a network.
+/// The currency of a stock, an ETF or a future shows next to the title.
 ///
-/// In portrait the chart is below the title and takes at most 45 % of the
-/// height, so the title keeps its full size. In landscape the screen is
-/// low, so the title, the range buttons and the change are at the left of
-/// the chart.
+/// Portrait and landscape have the same order: the title line, the range
+/// buttons, the chart and the change. The title line has a fixed height,
+/// so a long name or a missing currency never moves the buttons. The
+/// chart keeps a ratio from 1.5 to 2 (see `ChartShape`), so a move looks
+/// about as steep in both orientations. The change follows right below it.
 struct InstrumentChartView: View {
     let viewModel: InstrumentChartViewModel
     let onSelectRange: (ChartRange) -> Void
@@ -24,59 +26,21 @@ struct InstrumentChartView: View {
     private var group: MarketGroup { viewModel.instrument.group }
 
     var body: some View {
-        GeometryReader { geometry in
-            Group {
-                if geometry.size.width > geometry.size.height {
-                    landscapeLayout(size: geometry.size)
-                } else {
-                    portraitLayout(height: geometry.size.height)
-                }  
-            }
-            .padding(Theme.pageMargin)
-            .background(Theme.background)
+        VStack(spacing: 16) {
+            header
+                .frame(height: Theme.chartTitleRowHeight, alignment: .leading)
+            rangeSelector
+            chartArea
         }
+        .padding(Theme.pageMargin)
+        .background(Theme.background)
         // Keyed by the instrument, so a new instrument also gets its fetch
         // if a caller swaps the view model without a new view identity.
         .task(id: viewModel.id) { await viewModel.load() }
     }
 
-    private func portraitLayout(height: CGFloat) -> some View {
-        VStack(spacing: 16) {
-            header
-            makeRangeSelector(columnCount: ChartRange.allCases.count)
-            content
-                // A finite maximum: Swift Charts does not fill an
-                // open `maxHeight: .infinity`, and leaves a blank gap
-                // below the plot. Below the maximum, the chart gives
-                // way, so the bar stays on a smaller screen, e.g.
-                // with display zoom.
-                .frame(minHeight: Theme.chartMinimumHeight, maxHeight: height * Theme.chartHeightShare)
-            rangeChangeLabel
-            // Gets only the space that the chart does not use.
-            Spacer(minLength: 0)
-                .layoutPriority(-1)
-        }
-    }
-
-    /// The left column has a fixed share of the width, so the chart
-    /// cannot push the title and the buttons away. The range buttons are
-    /// in two rows, so their names keep their size.
-    private func landscapeLayout(size: CGSize) -> some View {
-        HStack(alignment: .top, spacing: Theme.chartLandscapeColumnGap) {
-            VStack(alignment: .leading, spacing: 16) {
-                stackedHeader
-                makeRangeSelector(columnCount: 2)
-                rangeChangeLabel
-                Spacer(minLength: 0)
-            }
-            .frame(width: size.width * Theme.chartLandscapeInfoShare)
-            content
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-        }
-    }
-
-    /// The currency follows the name. In the narrow landscape column it
-    /// is below the name, so a long name keeps more of its size.
+    /// The currency follows the name on the same line. A long name gets
+    /// smaller, so the line keeps its height.
     private var header: some View {
         HStack(alignment: .firstTextBaseline) {
             title
@@ -87,11 +51,28 @@ struct InstrumentChartView: View {
         }
     }
 
-    private var stackedHeader: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            title
-            currencyLabel
+    /// The chart in the size of `ChartShape`, centered, with the change
+    /// below it. The free space goes below the change.
+    private var chartArea: some View {
+        GeometryReader { geometry in
+            let size = ChartShape.fit(
+                width: geometry.size.width,
+                height: geometry.size.height - Theme.chartRangeChangeHeight - Theme.chartAreaSpacing
+            )
+            VStack(spacing: Theme.chartAreaSpacing) {
+                content
+                    .frame(width: size.width, height: size.height)
+                rangeChangeLabel
+                    .frame(height: Theme.chartRangeChangeHeight)
+                Spacer(minLength: 0)
+            }
+            .frame(maxWidth: .infinity)
         }
+    }
+
+    /// The direction over the shown range: a rise, a fall or no change.
+    private var trend: ValueTone {
+        Formatting.tone(for: viewModel.rangeChangePercent)
     }
 
     private var title: some View {
@@ -115,9 +96,8 @@ struct InstrumentChartView: View {
 
     /// The four range buttons. Picking one cuts that span from the
     /// stored history at once (see `InstrumentChartViewModel.select`).
-    private func makeRangeSelector(columnCount: Int) -> some View {
-        let columns = Array(repeating: GridItem(.flexible(), spacing: 10), count: columnCount)
-        return LazyVGrid(columns: columns, spacing: 10) {
+    private var rangeSelector: some View {
+        HStack(spacing: 10) {
             ForEach(ChartRange.allCases, id: \.self) { range in
                 let isActive = range == viewModel.range
                 Button {
@@ -166,7 +146,7 @@ struct InstrumentChartView: View {
         if let percent = viewModel.rangeChangePercent {
             Text(Formatting.percent(percent))
                 .font(Theme.chartRangeChangeFont)
-                .foregroundStyle(Formatting.color(for: percent))
+                .foregroundStyle(trend.color)
                 .lineLimit(1)
                 .minimumScaleFactor(0.5)
                 .accessibilityLabel("Veränderung über den gewählten Zeitraum: \(Formatting.percent(percent))")
@@ -188,7 +168,7 @@ struct InstrumentChartView: View {
     private var chart: some View {
         Chart(viewModel.points, id: \.date) { point in
             LineMark(x: .value("Datum", point.date), y: .value("Kurs", point.close))
-                .foregroundStyle(Theme.chartLineColor)
+                .foregroundStyle(trend.color)
                 .lineStyle(StrokeStyle(lineWidth: Theme.chartLineWidth, lineCap: .round, lineJoin: .round))
                 .interpolationMethod(.linear)
         }
@@ -226,7 +206,7 @@ struct InstrumentChartView: View {
             priceAxisLabel(value.as(Double.self), color: Theme.text)
         }
         AxisMarks(position: .trailing, values: currentPriceLabelPosition) { _ in
-            priceAxisLabel(viewModel.points.last?.close, color: Theme.chartLineColor)
+            priceAxisLabel(viewModel.points.last?.close, color: trend.color)
         }
     }
 

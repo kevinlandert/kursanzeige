@@ -55,12 +55,10 @@ struct PaletteTests {
         }
     }
 
-    @Test("the chart line and the sort column title are clear on the page and the header", arguments: [Palette.light, Palette.dark])
-    func chartLineAndSortTitleAreClearOnPageAndHeader(palette: Palette) {
-        for text in [palette.chartLine, palette.accentText] {
-            #expect(text.contrastRatio(to: palette.background) >= Self.minimumTextContrast)
-            #expect(text.contrastRatio(to: palette.headerBackground) >= Self.minimumTextContrast)
-        }
+    @Test("the sort column title is clear on the page and the header", arguments: [Palette.light, Palette.dark])
+    func sortTitleIsClearOnPageAndHeader(palette: Palette) {
+        #expect(palette.accentText.contrastRatio(to: palette.background) >= Self.minimumTextContrast)
+        #expect(palette.accentText.contrastRatio(to: palette.headerBackground) >= Self.minimumTextContrast)
     }
 
     @Test("button text is clear on a blue and on a green button", arguments: [Palette.light, Palette.dark])
@@ -82,7 +80,7 @@ struct PaletteTests {
         #expect(palette.chartBorder.contrastRatio(to: palette.background) >= Self.minimumButtonContrast)
     }
 
-    /// A white box on black is too bright next to the yellow line.
+    /// A white box on black is too bright next to the colored line.
     @Test("in dark mode the chart box is less bright than the text")
     func darkChartBorderIsLessBrightThanText() {
         #expect(Palette.dark.chartBorder.relativeLuminance < Palette.dark.text.relativeLuminance)
@@ -101,11 +99,6 @@ struct PaletteTests {
         for text in [palette.cursorText, palette.cursorMutedText, palette.cursorPositive, palette.cursorNegative] {
             #expect(text.contrastRatio(to: palette.cursor) >= Self.minimumTextContrast)
         }
-    }
-
-    @Test("the number of the cursor row is clear in its black badge", arguments: [Palette.light, Palette.dark])
-    func cursorBadgeNumberIsClear(palette: Palette) {
-        #expect(palette.cursor.contrastRatio(to: palette.cursorText) >= Self.minimumTextContrast)
     }
 
     @Test("the border of the cursor row stands out from the page", arguments: [Palette.light, Palette.dark])
@@ -133,11 +126,6 @@ struct PaletteTests {
         #expect(Palette.light.negative == RGBColor(hex: 0xB00000))
     }
 
-    @Test("the chart line is yellow on black and dark gold on white, because yellow on white is not clear")
-    func chartLineIsYellow() {
-        #expect(Palette.dark.chartLine == RGBColor(hex: 0xFFD60A))
-        #expect(Palette.light.chartLine == RGBColor(hex: 0x8A6500))
-    }
 
     @Test("the dark palette has a black page and white text")
     func darkPaletteHasBlackPageAndWhiteText() {

@@ -508,11 +508,11 @@ struct ListReaderTests {
 
     // MARK: Status line and lock screen
 
-    @Test("the status line tells the selected row with digits")
+    @Test("the status line tells the name of the selected row")
     func statusTellsSelectedRow() {
         let fixture = createReaderFixture(savedRowId: "row2")
 
-        #expect(fixture.reader.statusText == "Nummer 2 von 3 ausgewählt")
+        #expect(fixture.reader.statusText == "Zwei ausgewählt")
         #expect(fixture.reader.statusStyle == .idle)
     }
 
@@ -522,7 +522,7 @@ struct ListReaderTests {
 
         fixture.reader.startReading()
 
-        #expect(fixture.reader.statusText == "Liest vor · Nummer 1 von 3")
+        #expect(fixture.reader.statusText == "Liest vor · Eins")
         #expect(fixture.reader.statusStyle == .reading)
     }
 

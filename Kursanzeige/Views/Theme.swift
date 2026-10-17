@@ -69,9 +69,8 @@ enum Theme {
     /// digits so direction reads before color does.
     static let signFont = font(size: 34, weight: .heavy).monospacedDigit()
     static let headerFont = font(size: 26)
-    /// The thick chart line. Its color is different from `positive` and
-    /// `negative`, so the line never looks like a rise or a fall.
-    static let chartLineColor = Color.palette(\.chartLine)
+    /// The thick chart line. It has the color of the change: `positive`,
+    /// `negative`, or `neutral` when the change is 0.
     static let chartLineWidth: CGFloat = 12
     /// The space between the box and the first and last point of the line.
     /// A round line end goes half the line width past its point. Thus the
@@ -111,15 +110,12 @@ enum Theme {
     /// low label, as a part of the high-low range. A label nearer to them
     /// moves away. The labels are large, so they need a wide gap.
     static let chartCurrentPriceLabelGapShare: Double = 0.16
-    /// The largest part of the chart page height that the chart takes.
-    /// More makes the title shrink, because the page has no more space.
-    static let chartHeightShare: CGFloat = 0.45
-    /// In landscape the title, the range buttons and the change are in a
-    /// column at the left of the chart, with this part of the width.
-    static let chartLandscapeInfoShare: CGFloat = 0.38
-    static let chartLandscapeColumnGap: CGFloat = 24
-    /// The chart never gets lower, also on a small screen.
-    static let chartMinimumHeight: CGFloat = 250
+    /// The fixed height of the title line, one line of `chartTitleFont`.
+    /// Thus a long name or a missing currency never moves the range buttons.
+    static let chartTitleRowHeight: CGFloat = 150
+    /// One line of `chartRangeChangeFont`, so the chart knows its space.
+    static let chartRangeChangeHeight: CGFloat = 100
+    static let chartAreaSpacing: CGFloat = 16
     /// The bar at the bottom of the table and the chart page: a 3 pt rule
     /// over it, the status line, and four buttons, as in Schlagzeilen.
     static let bottomBarRuleWidth: CGFloat = 3
@@ -139,13 +135,6 @@ enum Theme {
     static let statusLineCornerRadius: CGFloat = 12
     static let statusLineHorizontalPadding: CGFloat = 16
     static let statusLineVerticalPadding: CGFloat = 10
-    /// The round number badge at the start of each row. The cursor row
-    /// has a black badge with a yellow number.
-    static let numberBadgeSize: CGFloat = 52
-    static let numberBadgeFont = font(size: 24).monospacedDigit()
-    static let numberBadgeBorderWidth: CGFloat = 3
-    /// The badge and a gap to the name.
-    static let numberColumnWidth: CGFloat = numberBadgeSize + 14
     /// Grey text on a grey button: it shows "not available" at once. The
     /// grey has a tested contrast, so the text stays clear.
     static let disabledButtonForeground = mutedText

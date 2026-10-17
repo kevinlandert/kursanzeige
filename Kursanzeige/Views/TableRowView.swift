@@ -1,7 +1,7 @@
 import SwiftUI
 import KursanzeigeKit
 
-/// One row: the number badge, the name and the four numeric columns, each
+/// One row: the name and the four numeric columns, each
 /// colored by sign. Row height comes from the parent (see
 /// `Theme.minRowHeight` and `PerformanceTableView`); this view just fills
 /// whatever height it's given, vertically centering every cell --
@@ -10,16 +10,12 @@ import KursanzeigeKit
 /// Schlagzeilen. Its text is dark also in dark mode.
 struct TableRowView: View {
     let row: InstrumentRow
-    /// The place of the row in the table, from 1.
-    let number: Int
     let isCursor: Bool
     let oneYearMode: OneYearMode
     let rangeMode: RangeMode
 
     var body: some View {
         HStack(spacing: 0) {
-            NumberBadge(number: number, isCursor: isCursor)
-                .frame(width: Theme.numberColumnWidth, alignment: .leading)
             Text(row.instrument.name)
                 .font(Theme.nameFont)
                 .foregroundStyle(isCursor ? Theme.cursorText : Theme.text)
@@ -87,30 +83,5 @@ extension EnvironmentValues {
     var columnLayout: ColumnLayout {
         get { self[ColumnLayoutKey.self] }
         set { self[ColumnLayoutKey.self] = newValue }
-    }
-}
-
-/// The round number at the start of a row: an outline circle, or a black
-/// circle with a yellow number in the cursor row. VoiceOver reads the
-/// number before the name.
-private struct NumberBadge: View {
-    let number: Int
-    let isCursor: Bool
-
-    var body: some View {
-        Text("\(number)")
-            .font(Theme.numberBadgeFont)
-            .lineLimit(1)
-            .minimumScaleFactor(0.6)
-            .foregroundStyle(isCursor ? Theme.cursor : Theme.text)
-            .frame(width: Theme.numberBadgeSize, height: Theme.numberBadgeSize)
-            .background {
-                if isCursor {
-                    Circle().fill(Theme.cursorText)
-                } else {
-                    Circle().strokeBorder(Theme.text, lineWidth: Theme.numberBadgeBorderWidth)
-                }
-            }
-            .accessibilityLabel("Nummer \(number)")
     }
 }

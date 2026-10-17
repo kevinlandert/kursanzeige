@@ -22,15 +22,15 @@ private func createModel(_ fakes: ListFakes, rows: [InstrumentRow] = [createRow(
 @Suite("TableListModel")
 @MainActor
 struct TableListModelTests {
-    @Test("a row reads its number as a word before its name and price")
-    func rowReadsNumberAsWord() async {
+    @Test("a row reads its name and its price, without a number")
+    func rowReadsNameWithoutNumber() async {
         let fakes = ListFakes()
         let model = createModel(fakes, rows: [createRow(nestle, price: 77.96), createRow(novartis)])
 
         model.reader.showNext(readsRow: true)
         await model.reader.waitForSpeech()
 
-        #expect(fakes.speaker.spokenTexts == ["Nummer zwei. Novartis, kein Kurs."])
+        #expect(fakes.speaker.spokenTexts == ["Novartis, kein Kurs."])
     }
 
     @Test("a new group during Vorlesen says the group name and its cursor row")
@@ -43,8 +43,8 @@ struct TableListModelTests {
         model.show(group: .usa, rows: [createRow(apple)])
         await waitUntil { fakes.speaker.spokenTexts.count == 2 }
 
-        #expect(fakes.speaker.spokenTexts.last == "USA. Nummer eins. Apple, kein Kurs.")
-        #expect(model.reader.statusText == "Nummer 1 von 1 ausgewählt")
+        #expect(fakes.speaker.spokenTexts.last == "USA. Apple, kein Kurs.")
+        #expect(model.reader.statusText == "Apple ausgewählt")
     }
 
     @Test("each group keeps its own cursor")
@@ -73,8 +73,8 @@ struct TableListModelTests {
         #expect(fakes.speaker.spokenTexts.isEmpty)
     }
 
-    @Test("after a new sort, a row reads its new number")
-    func rowReadsNewNumberAfterSort() async {
+    @Test("after a new sort, Vorherige reads the row above in the new order")
+    func previousFollowsNewSort() async {
         let fakes = ListFakes()
         let model = createModel(fakes)
 
@@ -82,7 +82,7 @@ struct TableListModelTests {
         model.reader.showPrevious(readsRow: true)
         await model.reader.waitForSpeech()
 
-        #expect(fakes.speaker.spokenTexts == ["Nummer zwei. Novartis, kein Kurs."])
+        #expect(fakes.speaker.spokenTexts == ["Novartis, kein Kurs."])
     }
 
     @Test("a tap on a row puts the cursor there without speech")
