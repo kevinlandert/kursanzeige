@@ -13,12 +13,13 @@ final class SettingsUITests: XCTestCase {
         XCTAssertTrue(app.buttons["settingsButton"].waitForExistence(timeout: 5))
     }
 
-    func testSettingsButtonIsLeftOfRefreshWithWideGap() {
+    /// The same place as in Schlagzeilen: „Einstellungen“ is the rightmost button.
+    func testSettingsButtonIsRightOfRefreshWithWideGap() {
         let settingsButton = app.buttons["settingsButton"]
         let refreshButton = app.buttons["refresh"]
 
         XCTAssertEqual(settingsButton.label, "Einstellungen")
-        XCTAssertGreaterThanOrEqual(refreshButton.frame.minX - settingsButton.frame.maxX, 40)
+        XCTAssertGreaterThanOrEqual(settingsButton.frame.minX - refreshButton.frame.maxX, 40)
         XCTAssertEqual(settingsButton.frame.midY, refreshButton.frame.midY, accuracy: 1)
     }
 

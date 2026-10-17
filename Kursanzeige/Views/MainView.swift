@@ -127,12 +127,13 @@ struct MainView: View {
             if !viewModel.isRefreshing && !viewModel.failedFetches.isEmpty {
                 FailureStatusView(failedFetches: viewModel.failedFetches, totalCount: viewModel.totalInstrumentCount)
             }
+            RefreshButton(isRefreshing: viewModel.isRefreshing) {
+                Task { await viewModel.refresh() }
+            }
+            // The rightmost button, as in Schlagzeilen.
             SettingsButton {
                 appModel.openSettings()
                 showingSettings = true
-            }
-            RefreshButton(isRefreshing: viewModel.isRefreshing) {
-                Task { await viewModel.refresh() }
             }
             .padding(.leading, Theme.topBarButtonGap)
         }
