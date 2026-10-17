@@ -104,60 +104,63 @@ struct MainView: View {
         viewModel.select(group)
     }
 
-    /// „Kurse“ over the time of the last refresh, as in Schlagzeilen. The
-    /// buttons are in the row of the title. Thus the time has the full
-    /// width and always fits in one line.
+    /// „Kurse“ over the time of the last refresh, with the buttons at the
+    /// right, as in Schlagzeilen. The top of the buttons is in line with the
+    /// top of „Kurse“.
     ///
     /// The progress and the failure count show in this bar, not in a row
-    /// of their own. Thus the group buttons and the table never move.
+    /// of their own. The bar keeps the space for the failure count when it
+    /// is not visible. Thus the group buttons and the table never move.
     private var topBar: some View {
-        VStack(alignment: .leading, spacing: Theme.topBarTitleGap) {
-            titleRow
-            updateRow
-        }
-    }
-
-    /// The row centers its items. A text baseline does not work: for an
-    /// item without text, the baseline is the bottom edge.
-    private var titleRow: some View {
-        HStack(alignment: .center) {
-            Text("Kurse")
-                .font(Theme.pageTitleFont)
-                .foregroundStyle(Theme.text)
-                .accessibilityAddTraits(.isHeader)
+        HStack(alignment: .top) {
+            titleLines
             Spacer()
-            RefreshButton(isRefreshing: viewModel.isRefreshing) {
-                Task { await viewModel.refresh() }
+            VStack(alignment: .trailing, spacing: Theme.titleLineSpacing) {
+                HStack(spacing: Theme.topBarButtonGap) {
+                    RefreshButton(isRefreshing: viewModel.isRefreshing) {
+                        Task { await viewModel.refresh() }
+                    }
+                    SettingsButton {
+                        appModel.openSettings()
+                        showingSettings = true
+                    }
+                }
+                // The buttons never break a word. The time gets a second line first.
+                .fixedSize()
+                if !viewModel.isRefreshing && !viewModel.failedFetches.isEmpty {
+                    FailureStatusView(failedFetches: viewModel.failedFetches, totalCount: viewModel.totalInstrumentCount)
+                }
             }
-            SettingsButton {
-                appModel.openSettings()
-                showingSettings = true
-            }
-            .padding(.leading, Theme.topBarButtonGap)
         }
+        .frame(minHeight: Theme.titleBarHeight, alignment: .top)
     }
 
     /// During a refresh, the progress shows in place of the time. The time
-    /// is old during a refresh, and the new time shows after it. The row
-    /// has the height of the progress, so it does not get higher during a
-    /// refresh.
-    private var updateRow: some View {
-        HStack(alignment: .center) {
-            if viewModel.isRefreshing {
-                RefreshProgressView(progress: viewModel.progress)
-            } else {
+    /// is old during a refresh, and the new time shows after it. On a narrow
+    /// screen, the time can take two lines. The hidden time keeps its space
+    /// during a refresh, so the bar keeps its height.
+    private var titleLines: some View {
+        VStack(alignment: .leading, spacing: Theme.titleLineSpacing) {
+            Text("Kurse")
+                .font(Theme.pageTitleFont)
+                .foregroundStyle(Theme.text)
+                // The line is as high as the font size, as in Schlagzeilen.
+                .padding(.vertical, -Theme.pageTitleTrim)
+                .accessibilityAddTraits(.isHeader)
+            ZStack(alignment: .topLeading) {
                 Text(UpdateTexts.updateLine(lastUpdate: viewModel.lastUpdated))
                     .font(Theme.timestampFont)
                     .foregroundStyle(Theme.text)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .opacity(viewModel.isRefreshing ? 0 : 1)
+                    .accessibilityHidden(viewModel.isRefreshing)
                     .accessibilityLabel(UpdateTexts.updateLabel(lastUpdate: viewModel.lastUpdated))
                     .accessibilityIdentifier("updateLine")
-            }
-            Spacer()
-            if !viewModel.isRefreshing && !viewModel.failedFetches.isEmpty {
-                FailureStatusView(failedFetches: viewModel.failedFetches, totalCount: viewModel.totalInstrumentCount)
+                if viewModel.isRefreshing {
+                    RefreshProgressView(progress: viewModel.progress)
+                }
             }
         }
-        .frame(minHeight: Theme.updateLineHeight)
     }
 }
 

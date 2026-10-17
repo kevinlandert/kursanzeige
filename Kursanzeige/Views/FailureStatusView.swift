@@ -27,6 +27,8 @@ struct FailureStatusView: View {
             }
             .accessibilityLabel("Welche Werte nicht geladen wurden anzeigen")
         }
+        // The top bar keeps this height free, so the table does not move.
+        .frame(height: Theme.failureStatusHeight)
         .sheet(isPresented: $showingDetail) {
             FailedInstrumentsSheet(failedFetches: failedFetches)
         }

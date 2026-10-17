@@ -2,8 +2,7 @@ import SwiftUI
 
 /// The progress of a refresh: a bar and the percent in digits. A bar
 /// alone is hard to read for a person with low vision. It shows under
-/// „Kurse“ in place of the time of the last refresh. It has a fixed width,
-/// so it does not fill the row.
+/// „Kurse“ in place of the time of the last refresh. It has a fixed width.
 struct RefreshProgressView: View {
     let progress: Double
 

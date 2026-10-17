@@ -18,9 +18,10 @@ final class TopBarUITests: XCTestCase {
 
         XCTAssertTrue(title.exists)
         XCTAssertTrue(updateLine.exists)
-        XCTAssertGreaterThanOrEqual(updateLine.frame.minY, title.frame.maxY)
+        // The frame of „Kurse“ has the full line of the font. The view cuts its empty space.
+        XCTAssertGreaterThan(updateLine.frame.midY, title.frame.maxY)
         XCTAssertEqual(updateLine.frame.minX, title.frame.minX, accuracy: 1)
-        XCTAssertGreaterThanOrEqual(updateLine.frame.minY, app.buttons["refresh"].frame.maxY)
+        XCTAssertLessThan(updateLine.frame.maxX, app.buttons["refresh"].frame.minX)
     }
 
     /// The label has the month name, because VoiceOver reads „16.10.26“ as three numbers.

@@ -146,7 +146,15 @@ enum Theme {
     static let statusFont = font(size: 20)
     static let timestampFont = font(size: 24)
     /// „Kurse“ in the top bar, the size of the titles in Schlagzeilen.
-    static let pageTitleFont = font(size: 46)
+    static let pageTitleFontSize: CGFloat = 46
+    static let pageTitleFont = font(size: pageTitleFontSize)
+    /// The space to remove over and under „Kurse“, so its line is as high
+    /// as the font size. The font has a higher line. The glyphs stay visible.
+    static let pageTitleTrim: CGFloat = {
+        let descriptor = UIFontDescriptor(fontAttributes: [.family: fontFamily])
+        let lineHeight = UIFont(descriptor: descriptor, size: pageTitleFontSize).lineHeight
+        return max(0, lineHeight - pageTitleFontSize) / 2
+    }()
     static let progressFont = font(size: 22)
 
     /// The settings page: cards as in Schlagzeilen, with large buttons
@@ -198,20 +206,20 @@ enum Theme {
     /// using this constant, so header and row-height math stay in sync.
     static let headerHeight: CGFloat = 76
     static let columnDividerWidth: CGFloat = 3
-    /// Fixed height of the top bar (timestamp, progress/failure status,
-    /// settings, refresh). Locking this down means the row's content can
-    /// change (spinner in/out, progress text in/out) without ever resizing
-    /// the bar itself, which would otherwise push the group selector and
-    /// table down and back up.
+    /// The height of the buttons of the top bar, and of „‹ Kurse“ in the
+    /// settings.
     static let topBarHeight: CGFloat = 72
     /// The gap between the buttons of the top bar. A wide gap makes a tap
     /// on the wrong button less probable.
     static let topBarButtonGap: CGFloat = 40
-    /// The gap between „Kurse“ and the time of the last refresh under it.
-    static let topBarTitleGap: CGFloat = 4
-    /// The height of the row under „Kurse“: the progress bar with its
-    /// text, which is higher than one line of `timestampFont`.
-    static let updateLineHeight: CGFloat = 44
+    /// The gap under „Kurse“ and under the buttons, as in Schlagzeilen.
+    static let titleLineSpacing: CGFloat = 6
+    /// The height of the failure count under the buttons. One line of
+    /// `statusFont` and its symbol fit in it.
+    static let failureStatusHeight: CGFloat = 30
+    /// The buttons with the failure count under them. On a wide screen,
+    /// „Kurse“ with one line of time is not as high.
+    static let titleBarHeight: CGFloat = topBarHeight + titleLineSpacing + failureStatusHeight
 }
 
 /// Proportional column widths shared by the header and every row so they

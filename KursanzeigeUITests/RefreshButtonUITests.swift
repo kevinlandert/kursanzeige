@@ -25,6 +25,23 @@ final class RefreshButtonUITests: XCTestCase {
         waitForLabel(beginningWith: "Aktualisieren", timeout: 120)
     }
 
+    /// The progress shows in place of the time of the last refresh. The
+    /// group buttons under the top bar must not move. On an 11-inch iPad in
+    /// portrait, the time takes two lines and the progress takes less space.
+    func testGroupButtonsKeepPlaceDuringRefresh() {
+        let startOrientation = XCUIDevice.shared.orientation
+        addTeardownBlock { XCUIDevice.shared.orientation = startOrientation }
+        XCUIDevice.shared.orientation = .portrait
+        let groupButton = app.buttons["Index"]
+        let frameBefore = groupButton.frame
+
+        refreshButton.tap()
+        waitForLabel(beginningWith: "Lädt", timeout: 2)
+
+        XCTAssertEqual(groupButton.frame, frameBefore)
+        waitForLabel(beginningWith: "Aktualisieren", timeout: 120)
+    }
+
     private var refreshButton: XCUIElement {
         app.buttons["refresh"]
     }
